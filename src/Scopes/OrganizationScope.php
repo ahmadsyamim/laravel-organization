@@ -14,9 +14,30 @@ class OrganizationScope implements Scope
      */
     public function apply(Builder $builder, Model $model)
     {
-        if (Auth::check() && Auth::user()->organization_id) {
-            $builder->where('organization_id', Auth::user()->organization_id);
+        $organizationId = $this->getCurrentOrganizationId();
+
+        if ($organizationId) {
+            $builder->where('organization_id', $organizationId);
         }
+    }
+
+    /**
+     * Get the current organization ID safely without triggering recursive queries.
+     */
+    protected function getCurrentOrganizationId(): ?int
+    {
+        if (! Auth::check()) {
+            return null;
+        }
+
+        $user = Auth::user();
+
+        // Use getAttributeValue() to get the raw value without triggering relationships
+        // This method accesses the attribute directly, bypassing relationship lazy loading
+        // @phpstan-ignore-next-line
+        return method_exists($user, 'getAttributeValue')
+            ? $user->getAttributeValue('organization_id')
+            : ($user->organization_id ?? null);
     }
 
     /**

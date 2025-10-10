@@ -26,8 +26,11 @@ trait InteractsWithOrganization
 
         // Auto-set organization_id on creating
         static::creating(function ($model) {
-            if (Auth::check() && Auth::user()->organization_id && ! $model->organization_id) {
-                $model->organization_id = Auth::user()->organization_id;
+            if (! $model->organization_id) {
+                $organizationId = static::getCurrentOrganizationId();
+                if ($organizationId) {
+                    $model->organization_id = $organizationId;
+                }
             }
         });
     }
@@ -59,10 +62,24 @@ trait InteractsWithOrganization
 
     /**
      * Get the current organization ID from auth user.
+     *
+     * Safely retrieves the organization_id without triggering relationships
+     * or causing recursive query execution.
      */
     public static function getCurrentOrganizationId(): ?int
     {
-        return Auth::check() ? Auth::user()->organization_id : null;
+        if (! Auth::check()) {
+            return null;
+        }
+
+        $user = Auth::user();
+
+        // Use getAttributeValue() to get the raw value without triggering relationships
+        // This method accesses the attribute directly, bypassing relationship lazy loading
+        // @phpstan-ignore-next-line
+        return method_exists($user, 'getAttributeValue')
+            ? $user->getAttributeValue('organization_id')
+            : ($user->organization_id ?? null);
     }
 
     /**
