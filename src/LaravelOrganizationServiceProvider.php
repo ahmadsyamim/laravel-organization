@@ -2,7 +2,7 @@
 
 namespace CleaniqueCoders\LaravelOrganization;
 
-use CleaniqueCoders\LaravelOrganization\Commands\LaravelOrganizationCommand;
+use CleaniqueCoders\LaravelOrganization\Actions\CreateNewOrganization;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationMembershipContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationOwnershipContract;
@@ -24,7 +24,7 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigration('create_laravel_organization_table')
-            ->hasCommand(LaravelOrganizationCommand::class);
+            ->hasCommand(CreateNewOrganization::class);
     }
 
     public function packageRegistered(): void
