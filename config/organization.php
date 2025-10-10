@@ -32,7 +32,26 @@ return [
 
     'user-model' => User::class,
 
-    'org-model' => Organization::class,
+    /*
+    |--------------------------------------------------------------------------
+    | Organization Model
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the Organization model class that will be used throughout
+    | the organization system. The model should extend CleaniqueCoders\LaravelOrganization\Models\Organization
+    | or implement the necessary contracts for organization management.
+    |
+    | The Organization model will be used for:
+    | - Organization data management and persistence
+    | - Organization relationships with users and other entities
+    | - Organization settings and configuration storage
+    | - Multi-tenancy and organization scoping
+    |
+    | Default: CleaniqueCoders\LaravelOrganization\Models\Organization::class
+    |
+    */
+
+    'organization-model' => Organization::class,
 
     /*
     |--------------------------------------------------------------------------

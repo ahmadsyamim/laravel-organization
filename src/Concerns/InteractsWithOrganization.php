@@ -29,7 +29,7 @@ trait InteractsWithOrganization
      */
     public function organization()
     {
-        return $this->belongsTo(config('organization.org-model'));
+        return $this->belongsTo(config('organization.organization-model'));
     }
 
     /**
