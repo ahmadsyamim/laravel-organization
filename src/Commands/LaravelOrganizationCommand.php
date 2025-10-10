@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace CleaniqueCoders\LaravelOrganization\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LaravelOrganizationCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-organization';
 
     public $description = 'My command';
 
