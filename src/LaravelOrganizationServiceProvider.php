@@ -9,11 +9,11 @@ use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationMembershipContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationOwnershipContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationSettingsContract;
-use CleaniqueCoders\LaravelOrganization\Livewire\CreateOrganizationForm;
-use CleaniqueCoders\LaravelOrganization\Livewire\ManageOrganization;
+use CleaniqueCoders\LaravelOrganization\Livewire\CreateOrganization;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationList;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationSwitcher;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationWidget;
+use CleaniqueCoders\LaravelOrganization\Livewire\UpdateOrganization;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -65,8 +65,8 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
         // Register Livewire components
         if (class_exists(Livewire::class)) {
             Livewire::component('org::switcher', OrganizationSwitcher::class);
-            Livewire::component('org::form', CreateOrganizationForm::class);
-            Livewire::component('org::manage', ManageOrganization::class);
+            Livewire::component('org::create', CreateOrganization::class);
+            Livewire::component('org::update', UpdateOrganization::class);
             Livewire::component('org::list', OrganizationList::class);
             Livewire::component('org::widget', OrganizationWidget::class);
         }

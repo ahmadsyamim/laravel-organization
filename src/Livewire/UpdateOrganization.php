@@ -3,14 +3,14 @@
 namespace CleaniqueCoders\LaravelOrganization\Livewire;
 
 use CleaniqueCoders\LaravelOrganization\Actions\DeleteOrganization;
-use CleaniqueCoders\LaravelOrganization\Actions\UpdateOrganization;
+use CleaniqueCoders\LaravelOrganization\Actions\UpdateOrganization as UpdateAction;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
-class ManageOrganization extends Component
+class UpdateOrganization extends Component
 {
     public ?Organization $organization = null;
 
@@ -145,7 +145,7 @@ class ManageOrganization extends Component
 
         try {
             // Use the UpdateOrganization action
-            $updatedOrganization = UpdateOrganization::run(
+            $updatedOrganization = UpdateAction::run(
                 $this->organization,
                 $user,
                 [
@@ -158,12 +158,6 @@ class ManageOrganization extends Component
 
             // Emit events
             $this->dispatch('organization-updated', organizationId: $updatedOrganization->id);
-
-            session()->flash('message', "Organization '{$updatedOrganization->name}' updated successfully!");
-
-            // Refresh the page
-            return redirect()->to(request()->url());
-
         } catch (\Exception $e) {
             $this->errorMessage = 'Failed to update organization: '.$e->getMessage();
         }
@@ -209,12 +203,6 @@ class ManageOrganization extends Component
 
             // Emit events
             $this->dispatch('organization-deleted', organizationId: $result['deleted_organization_id']);
-
-            session()->flash('message', $result['message']);
-
-            // Refresh the page
-            return redirect()->to(request()->url());
-
         } catch (\Exception $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -228,11 +216,11 @@ class ManageOrganization extends Component
 
         $userRole = $this->organization->getUserRole($user);
 
-        return $userRole && $userRole->value === 'administrator';
+        return $userRole && $userRole->isAdmin();
     }
 
     public function render()
     {
-        return view('org::livewire.manage-organization');
+        return view('org::livewire.update-organization');
     }
 }

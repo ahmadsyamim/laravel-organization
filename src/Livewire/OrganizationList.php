@@ -2,6 +2,7 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Livewire;
 
+use CleaniqueCoders\LaravelOrganization\Enums\OrganizationRole;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -107,12 +108,6 @@ class OrganizationList extends Component
 
             // Emit event for other components to listen to
             $this->dispatch('organization-switched', organizationId: $organization->id);
-
-            session()->flash('message', "Switched to {$organization->name}");
-
-            // Refresh the page
-            return redirect()->to(request()->url());
-
         } catch (\Exception $e) {
             $this->errorMessage = 'Failed to switch organization: '.$e->getMessage();
         }
@@ -175,7 +170,7 @@ class OrganizationList extends Component
 
         $role = $organization->getUserRole($user);
 
-        return $role ? ucfirst($role->value) : 'Member';
+        return $role ? $role->label() : OrganizationRole::MEMBER->label();
     }
 
     public function render()

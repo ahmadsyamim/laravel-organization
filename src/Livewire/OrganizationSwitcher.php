@@ -3,7 +3,6 @@
 namespace CleaniqueCoders\LaravelOrganization\Livewire;
 
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -58,7 +57,7 @@ class OrganizationSwitcher extends Component
             $organization = Organization::find($organizationId);
 
             if (! $organization) {
-                $this->errorMessage = 'Organization not found.';
+                $this->errorMessage = __('Organization not found.');
 
                 return;
             }
@@ -67,7 +66,7 @@ class OrganizationSwitcher extends Component
 
             // Check if user has access to this organization
             if (! $organization->isOwnedBy($user) && ! $organization->hasActiveMember($user)) {
-                $this->errorMessage = 'You do not have access to this organization.';
+                $this->errorMessage = __('You do not have access to this organization.');
 
                 return;
             }
@@ -82,13 +81,6 @@ class OrganizationSwitcher extends Component
 
             // Emit event for other components to listen to
             $this->dispatch('organization-switched', organizationId: $organization->id);
-
-            // Show success message
-            session()->flash('message', "Switched to {$organization->name}");
-
-            // Optionally redirect to refresh the page
-            return redirect()->to(request()->url());
-
         } catch (\Exception $e) {
             $this->errorMessage = 'Failed to switch organization: '.$e->getMessage();
         }

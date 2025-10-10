@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
-class CreateOrganizationForm extends Component
+class CreateOrganization extends Component
 {
     public bool $showModal = false;
 
@@ -106,9 +106,6 @@ class CreateOrganizationForm extends Component
             $this->dispatch('organization-switched', organizationId: $organization->id);
 
             session()->flash('message', "Organization '{$organization->name}' created successfully!");
-
-            // Refresh the page or redirect
-            return redirect()->to(request()->url());
 
         } catch (\Exception $e) {
             $this->errorMessage = 'Failed to create organization: '.$e->getMessage();

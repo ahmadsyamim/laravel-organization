@@ -1,6 +1,6 @@
 <?php
 
-use CleaniqueCoders\LaravelOrganization\Livewire\ManageOrganization;
+use CleaniqueCoders\LaravelOrganization\Livewire\UpdateOrganization;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -16,7 +16,7 @@ beforeEach(function () {
 it('prevents deletion when user has only one organization', function () {
     $organization = Organization::factory()->create(['owner_id' => $this->user->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization)
         ->set('confirmationName', $organization->name)
         ->call('deleteOrganization')
@@ -29,7 +29,7 @@ it('allows deletion when user has multiple organizations', function () {
     $organization1 = Organization::factory()->create(['owner_id' => $this->user->id]);
     $organization2 = Organization::factory()->create(['owner_id' => $this->user->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization2)
         ->set('confirmationName', $organization2->name)
         ->call('deleteOrganization');
@@ -45,7 +45,7 @@ it('prevents deletion of current organization', function () {
     // Set organization1 as current
     $this->user->update(['organization_id' => $organization1->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization1)
         ->set('confirmationName', $organization1->name)
         ->call('deleteOrganization')
@@ -61,7 +61,7 @@ it('allows deletion of non-current organization', function () {
     // Set organization1 as current
     $this->user->update(['organization_id' => $organization1->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization2)
         ->set('confirmationName', $organization2->name)
         ->call('deleteOrganization');
@@ -75,7 +75,7 @@ it('permanently deletes organization using forceDelete', function () {
     $organization1 = Organization::factory()->create(['owner_id' => $this->user->id]);
     $organization2 = Organization::factory()->create(['owner_id' => $this->user->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization2)
         ->set('confirmationName', $organization2->name)
         ->call('deleteOrganization');
@@ -94,7 +94,7 @@ it('prevents deletion when organization has active members', function () {
         'is_active' => true,
     ]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization2)
         ->set('confirmationName', $organization2->name)
         ->call('deleteOrganization')
@@ -107,7 +107,7 @@ it('requires exact organization name confirmation', function () {
     $organization1 = Organization::factory()->create(['owner_id' => $this->user->id]);
     $organization2 = Organization::factory()->create(['owner_id' => $this->user->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization2)
         ->set('confirmationName', 'wrong name')
         ->call('deleteOrganization')
@@ -121,7 +121,7 @@ it('only allows owner to delete organization', function () {
     $anotherUser = User::factory()->create();
     $organization = Organization::factory()->create(['owner_id' => $anotherUser->id]);
 
-    Livewire::test(ManageOrganization::class)
+    Livewire::test(UpdateOrganization::class)
         ->set('organization', $organization)
         ->set('confirmationName', $organization->name)
         ->call('deleteOrganization')

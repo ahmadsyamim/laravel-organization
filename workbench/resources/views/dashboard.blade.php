@@ -41,11 +41,11 @@
         @livewire('org::list')
 
         <!-- Organization Display & Management -->
-        @livewire('org::widget')
+        {{-- @livewire('org::widget') --}}
 
         <!-- Modal Components for CRUD Operations -->
-        @livewire('org::form')
-        @livewire('org::manage')
+        @livewire('org::create')
+        @livewire('org::update')
     </div>
 
 
