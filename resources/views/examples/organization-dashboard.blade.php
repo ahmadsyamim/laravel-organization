@@ -29,7 +29,7 @@
                     <!-- Organization Switcher in Navigation -->
                     <div class="flex items-center space-x-4">
                         @auth
-                            <livewire:org::switcher />
+                            <livewire:org::switcher :user="auth()->user()" />
                         @endauth
 
                         <!-- User menu would go here -->

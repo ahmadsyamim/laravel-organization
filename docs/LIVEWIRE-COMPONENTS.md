@@ -11,6 +11,13 @@ A dropdown component that allows users to switch between organizations they have
 #### Usage
 
 ```blade
+{{-- Pass the authenticated user to the component --}}
+<livewire:org::switcher :user="auth()->user()" />
+
+{{-- Or using a variable --}}
+<livewire:org::switcher :user="$user" />
+
+{{-- If user is not passed, it will use Auth::user() as fallback --}}
 <livewire:org::switcher />
 ```
 

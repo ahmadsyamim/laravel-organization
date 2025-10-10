@@ -12,7 +12,6 @@ use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationSettingsContract;
 use CleaniqueCoders\LaravelOrganization\Livewire\CreateOrganization;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationList;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationSwitcher;
-use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationWidget;
 use CleaniqueCoders\LaravelOrganization\Livewire\UpdateOrganization;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
@@ -68,7 +67,6 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
             Livewire::component('org::create', CreateOrganization::class);
             Livewire::component('org::update', UpdateOrganization::class);
             Livewire::component('org::list', OrganizationList::class);
-            Livewire::component('org::widget', OrganizationWidget::class);
         }
     }
 }

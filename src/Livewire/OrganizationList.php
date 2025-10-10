@@ -101,10 +101,8 @@ class OrganizationList extends Component
                 return;
             }
 
-            // Update user's current organization
-            if (method_exists($user, 'update')) {
-                $user->update(['organization_id' => $organization->id]);
-            }
+            $user->organization_id = $organization->id;
+            $user->save();
 
             // Emit event for other components to listen to
             $this->dispatch('organization-switched', organizationId: $organization->id);
