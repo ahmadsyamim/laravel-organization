@@ -100,7 +100,6 @@ class CreateOrganizationForm extends Component
             return redirect()->to(request()->url());
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
             session()->flash('error', 'Failed to create organization: '.$e->getMessage());
         }
     }
