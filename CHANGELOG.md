@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-organization` will be documented in this file.
 
+## Update gitignore to include docs/ directory - 2025-10-10
+
+**Full Changelog**: https://github.com/cleaniquecoders/laravel-organization/compare/1.0.2...1.0.3
+
 ## Fix migration import models to use config - 2025-10-10
 
 **Full Changelog**: https://github.com/cleaniquecoders/laravel-organization/compare/1.0.1...1.0.2
@@ -32,6 +36,7 @@ php artisan migrate
 
 
 
+
 ```
 ### 🚀 Quick Usage
 
@@ -44,6 +49,7 @@ $org->addUser($member, OrganizationRole::MEMBER);
 class Post extends Model {
     use InteractsWithOrganization;
 }
+
 
 
 
