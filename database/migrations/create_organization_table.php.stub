@@ -1,19 +1,66 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
-        Schema::create('laravel_organization_table', function (Blueprint $table) {
+        Schema::create('organizations', function (Blueprint $table) {
             $table->id();
-
-            // add fields
-
+            $table->uuid('uuid')->unique();
+            $table->foreignIdFor(User::class, 'owner_id')->constrained('users')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->json('settings')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
+
+        Schema::create('organization_users', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(Organization::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->enum('role', array_column(OrganizationRole::cases(), 'value'))->default(OrganizationRole::MEMBER->value);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+
+            // Ensure unique combination of organization and user
+            $table->unique(['organization_id', 'user_id']);
+
+            // Add indexes for better query performance
+            $table->index(['organization_id', 'role']);
+            $table->index(['user_id', 'role']);
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreignIdFor(Organization::class)->nullable()->after('uuid')->constrained()->nullOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['organization_id']);
+            $table->dropColumn('organization_id');
+        });
+
+        Schema::dropIfExists('organization_users');
+
+        Schema::dropIfExists('organizations');
     }
 };

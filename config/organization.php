@@ -1,6 +1,9 @@
 <?php
 
 // config for CleaniqueCoders/LaravelOrganization
-return [
 
+use Illuminate\Foundation\Auth\User;
+
+return [
+    'user-model' => User::class,
 ];
