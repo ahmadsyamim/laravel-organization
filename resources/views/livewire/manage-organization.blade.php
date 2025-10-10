@@ -192,11 +192,14 @@
 
                     <div class="mt-3 text-center sm:mt-5">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">
-                            Delete Organization
+                            Permanently Delete Organization
                         </h3>
                         <div class="mt-2">
-                            <p class="text-sm text-gray-500">
-                                This action cannot be undone. This will permanently delete the organization and all associated data.
+                            <p class="text-sm text-red-600 font-semibold">
+                                ⚠️ WARNING: This action is PERMANENT and cannot be undone!
+                            </p>
+                            <p class="text-sm text-gray-500 mt-2">
+                                This will permanently delete the organization and all associated data. The organization cannot be recovered after deletion.
                             </p>
                         </div>
                     </div>
@@ -239,10 +242,17 @@
                             </div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-medium text-red-800">
-                                    Confirm Organization Deletion
+                                    Confirm Permanent Deletion
                                 </h3>
                                 <div class="mt-2 text-sm text-red-700">
-                                    <p>Please type <strong>{{ $organization->name ?? '' }}</strong> to confirm deletion:</p>
+                                    <p class="mb-2">Before you can delete this organization, please note:</p>
+                                    <ul class="list-disc list-inside space-y-1 mb-3">
+                                        <li>You must have at least one organization</li>
+                                        <li>You cannot delete your currently active organization</li>
+                                        <li>All members must be removed first</li>
+                                        <li>This deletion is permanent and cannot be undone</li>
+                                    </ul>
+                                    <p class="font-semibold">Type <span class="font-bold">{{ $organization->name ?? '' }}</span> to confirm:</p>
                                 </div>
                                 <div class="mt-3">
                                     <input wire:model.live="confirmationName"

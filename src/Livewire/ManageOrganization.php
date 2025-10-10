@@ -204,6 +204,23 @@ class ManageOrganization extends Component
             return;
         }
 
+        // Check if user only has one organization
+        $userOrganizationCount = Organization::where('owner_id', $user->id)->count();
+
+        if ($userOrganizationCount <= 1) {
+            $this->errorMessage = 'Cannot delete your only organization. You must have at least one organization.';
+
+            return;
+        }
+
+        // Check if this is the user's current organization
+        if (property_exists($user, 'organization_id') &&
+            $user->organization_id === $this->organization->id) {
+            $this->errorMessage = 'Cannot delete your current organization. Please switch to another organization first.';
+
+            return;
+        }
+
         // Check if organization has active members (excluding owner)
         $activeMembersCount = $this->organization->activeUsers()
             ->where('user_id', '!=', $user->id)
@@ -218,23 +235,15 @@ class ManageOrganization extends Component
         try {
             $organizationName = $this->organization->name;
 
-            // If this is the user's current organization, clear it
-            if (property_exists($user, 'organization_id') &&
-                $user->organization_id === $this->organization->id &&
-                method_exists($user, 'update')) {
-                $user->update(['organization_id' => null]);
-            }
-
-            // Soft delete the organization
-            $this->organization->delete();
+            // Permanently delete the organization (force delete)
+            $this->organization->forceDelete();
 
             $this->closeModal();
 
             // Emit events
             $this->dispatch('organization-deleted', organizationId: $this->organization->id);
-            $this->dispatch('organization-switched', organizationId: null);
 
-            session()->flash('message', "Organization '{$organizationName}' deleted successfully!");
+            session()->flash('message', "Organization '{$organizationName}' has been permanently deleted!");
 
             // Refresh the page
             return redirect()->to(request()->url());
