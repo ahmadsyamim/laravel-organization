@@ -1,15 +1,23 @@
-# Organization Actions
+# Components & Actions
+
+This documentation covers the action classes and Livewire components provided by the Laravel Organization package.
+
+---
+
+## Organization Actions
 
 This package provides dedicated action classes for managing organizations. Actions are reusable, testable units of business logic that can be used in various contexts (Livewire components, API controllers, console commands, jobs, etc.).
 
-## Available Actions
+### Available Actions
 
-### 1. CreateNewOrganization
+#### 1. CreateNewOrganization
+
 Create a new organization for a user.
 
 **Location:** `src/Actions/CreateNewOrganization.php`
 
 **Usage:**
+
 ```php
 use CleaniqueCoders\LaravelOrganization\Actions\CreateNewOrganization;
 
@@ -22,17 +30,20 @@ $organization = CreateNewOrganization::run(
 ```
 
 **Features:**
+
 - Automatically sets as user's current organization if default
 - Generates unique slug from name
 - Applies default settings
 - Attaches user as owner with appropriate role
 
-### 2. UpdateOrganization
+#### 2. UpdateOrganization
+
 Update an existing organization with validation.
 
 **Location:** `src/Actions/UpdateOrganization.php`
 
 **Usage:**
+
 ```php
 use CleaniqueCoders\LaravelOrganization\Actions\UpdateOrganization;
 
@@ -47,21 +58,25 @@ $updatedOrganization = UpdateOrganization::run(
 ```
 
 **Features:**
+
 - Validates user permissions (owner or administrator)
 - Validates data (name uniqueness, length constraints)
 - Returns fresh organization instance
 - Provides static methods for rules and messages
 
 **Validation Rules:**
+
 - `name`: Required, 2-255 characters, unique (excluding current org)
 - `description`: Optional, max 1000 characters
 
 **Permissions:**
+
 - Organization owner can update
 - Organization administrator can update
 - Other users will receive exception
 
 **Static Helper Methods:**
+
 ```php
 // Get validation rules
 $rules = UpdateOrganization::rules($organization);
@@ -70,12 +85,14 @@ $rules = UpdateOrganization::rules($organization);
 $messages = UpdateOrganization::messages();
 ```
 
-### 3. DeleteOrganization
+#### 3. DeleteOrganization
+
 Permanently delete an organization with business rule validation.
 
 **Location:** `src/Actions/DeleteOrganization.php`
 
 **Usage:**
+
 ```php
 use CleaniqueCoders\LaravelOrganization\Actions\DeleteOrganization;
 
@@ -94,17 +111,20 @@ $result = DeleteOrganization::run(
 ```
 
 **Business Rules:**
+
 1. Only owner can delete
 2. User must have at least one organization
 3. Cannot delete currently active organization
 4. Organization must have no active members (except owner)
 
 **Features:**
+
 - Permanently deletes (uses `forceDelete()`)
 - Returns detailed result array
 - Provides helper methods for checking eligibility
 
 **Static Helper Methods:**
+
 ```php
 // Check if organization can be deleted
 $result = DeleteOrganization::canDelete($organization, $user);
@@ -115,14 +135,15 @@ $requirements = DeleteOrganization::getDeletionRequirements();
 // Returns array of requirement strings
 ```
 
-## Action Pattern
+### Action Pattern
 
 All actions in this package use the [Laravel Actions](https://laravelactions.com/) package by Loris Leiva, which provides the `AsAction` trait.
 
-### Key Features
+#### Key Features
 
 **1. Multiple Contexts**
 Actions can be used as:
+
 - Static method calls: `UpdateOrganization::run(...)`
 - Class instantiation: `(new UpdateOrganization())->handle(...)`
 - Artisan commands: `php artisan user:create-org`
@@ -130,6 +151,7 @@ Actions can be used as:
 
 **2. Testability**
 Actions are easy to test in isolation:
+
 ```php
 it('can update organization', function () {
     $result = UpdateOrganization::run($organization, $user, $data);
@@ -139,6 +161,7 @@ it('can update organization', function () {
 
 **3. Reusability**
 Use actions anywhere in your application:
+
 ```php
 // In Livewire component
 UpdateOrganization::run($this->organization, auth()->user(), $this->formData);
@@ -151,9 +174,9 @@ $this->updateAction = new UpdateOrganization();
 $org = $this->updateAction->handle($organization, $user, $data);
 ```
 
-## Usage Examples
+### Action Usage Examples
 
-### Example 1: Livewire Component
+#### Example 1: Livewire Component
 
 ```php
 namespace App\Http\Livewire;
@@ -188,7 +211,7 @@ class EditOrganization extends Component
 }
 ```
 
-### Example 2: API Controller
+#### Example 2: API Controller
 
 ```php
 namespace App\Http\Controllers\Api;
@@ -251,7 +274,7 @@ class OrganizationController extends Controller
 }
 ```
 
-### Example 3: Custom Service Class
+#### Example 3: Custom Service Class
 
 ```php
 namespace App\Services;
@@ -303,75 +326,283 @@ class OrganizationManagementService
 }
 ```
 
-### Example 4: Job Queue
+---
+
+## Livewire Components
+
+The Laravel Organization package provides several pre-built Livewire components for managing organizations in your application. These components are built with Alpine.js for interactivity and styled with Tailwind CSS.
+
+### Available Components
+
+#### 1. Organization Switcher (`OrganizationSwitcher`)
+
+A dropdown component that allows users to switch between organizations they have access to.
+
+**Usage:**
+
+```blade
+{{-- Pass the authenticated user to the component --}}
+<livewire:org::switcher :user="auth()->user()" />
+
+{{-- Or using a variable --}}
+<livewire:org::switcher :user="$user" />
+
+{{-- If user is not passed, it will use Auth::user() as fallback --}}
+<livewire:org::switcher />
+```
+
+**Features:**
+
+- Displays current organization with avatar
+- Lists all accessible organizations
+- Shows user role in each organization
+- Provides quick access to create and manage functions
+- Auto-updates when organizations change
+- Loading states and error handling
+
+**Events Emitted:**
+
+- `organization-switched` - When user switches to a different organization
+- `show-create-organization` - Triggers create organization modal
+- `show-manage-organization` - Triggers manage organization modal
+
+---
+
+#### 2. Create Organization Form (`CreateOrganizationForm`)
+
+A modal form for creating new organizations with validation.
+
+**Usage:**
+
+```blade
+<livewire:org::form />
+```
+
+**Features:**
+
+- Modal-based form with Alpine.js animations
+- Real-time validation
+- Option to set as current organization
+- Character counter for description
+- Loading states and success/error messages
+
+**Events Listened:**
+
+- `show-create-organization` - Opens the modal
+
+**Events Emitted:**
+
+- `organization-created` - When organization is successfully created
+- `organization-switched` - When "set as current" option is enabled
+
+---
+
+#### 3. Manage Organization (`ManageOrganization`)
+
+A comprehensive modal for editing and deleting organizations.
+
+**Usage:**
+
+```blade
+<livewire:org::manage />
+```
+
+**Features:**
+
+- Edit organization name and description
+- Delete organization with confirmation
+- Permission checks (owner/admin only)
+- Safe deletion (prevents deletion with active members)
+- Confirmation name input for deletion
+
+**Events Listened:**
+
+- `show-manage-organization` - Opens the modal with organization data
+
+**Events Emitted:**
+
+- `organization-updated` - When organization is successfully updated
+- `organization-deleted` - When organization is successfully deleted
+
+---
+
+#### 4. Organization List (`OrganizationList`)
+
+A full-featured table for displaying and managing all user organizations.
+
+**Usage:**
+
+```blade
+<livewire:org::list />
+```
+
+**Features:**
+
+- Paginated table with search and filtering
+- Sortable columns (name, created date)
+- Filter by role (all, owned, member)
+- Quick actions (switch, edit, delete)
+- Responsive design
+- Empty states with helpful messages
+
+**Events Listened:**
+
+- `organization-created` - Refreshes the list
+- `organization-updated` - Refreshes the list
+- `organization-deleted` - Refreshes the list
+
+**Events Emitted:**
+
+- `show-manage-organization` - Triggers edit/delete modals
+- `organization-switched` - When switching organizations
+
+---
+
+#### 5. Organization Widget (`OrganizationWidget`)
+
+A compact sidebar widget showing current organization and quick actions.
+
+**Usage:**
+
+```blade
+<livewire:org::widget />
+
+<!-- With options -->
+<livewire:org::widget :show-quick-actions="false" />
+```
+
+**Parameters:**
+
+- `showQuickActions` (boolean, default: true) - Shows/hides action buttons
+
+**Features:**
+
+- Current organization display
+- Recent organizations list
+- Quick actions (create, manage, view all)
+- Organization statistics
+- Compact design for sidebars
+
+### Complete Implementation Example
+
+Here's a complete example showing how to use all components together:
+
+```blade
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Management</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    @livewireStyles
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-md">
+            <div class="p-4">
+                <livewire:org::widget />
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <!-- Header with Organization Switcher -->
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16 items-center">
+                        <h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
+                        <livewire:org::switcher />
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div class="px-4 py-6 sm:px-0">
+                    <livewire:org::list />
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Global Modals -->
+    <livewire:org::form />
+    <livewire:org::manage />
+
+    @livewireScripts
+</body>
+</html>
+```
+
+### Event System
+
+The components communicate through Livewire's event system:
+
+```javascript
+// Listen for events in your JavaScript
+document.addEventListener('livewire:init', () => {
+    Livewire.on('organization-switched', (event) => {
+        console.log('Switched to organization:', event.organizationId);
+        // Update other UI elements, redirect, etc.
+    });
+
+    Livewire.on('organization-created', (event) => {
+        console.log('Created organization:', event.organizationId);
+        // Show success animation, redirect, etc.
+    });
+});
+```
+
+### Customization
+
+#### Styling
+
+All components use Tailwind CSS classes and can be customized by:
+
+1. **Publishing the views:**
+
+```bash
+php artisan vendor:publish --tag="org-views"
+```
+
+2. **Modifying the published Blade templates** in `resources/views/vendor/laravel-organization/`
+
+#### Extending Components
+
+You can extend the components by creating your own Livewire components that extend the package components:
 
 ```php
-namespace App\Jobs;
+<?php
 
-use CleaniqueCoders\LaravelOrganization\Actions\DeleteOrganization;
-use CleaniqueCoders\LaravelOrganization\Models\Organization;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+namespace App\Http\Livewire;
 
-class DeleteInactiveOrganizations implements ShouldQueue
+use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationSwitcher as BaseOrganizationSwitcher;
+
+class CustomOrganizationSwitcher extends BaseOrganizationSwitcher
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public function handle()
+    public function customMethod()
     {
-        $inactiveOrganizations = Organization::where('last_activity', '<', now()->subMonths(6))->get();
-
-        foreach ($inactiveOrganizations as $organization) {
-            $owner = $organization->owner;
-
-            // Check if can delete
-            $eligibility = DeleteOrganization::canDelete($organization, $owner);
-
-            if ($eligibility['can_delete']) {
-                try {
-                    DeleteOrganization::run($organization, $owner);
-                    \Log::info("Deleted inactive organization: {$organization->name}");
-                } catch (\Exception $e) {
-                    \Log::error("Failed to delete organization {$organization->id}: {$e->getMessage()}");
-                }
-            }
-        }
+        // Your custom logic
     }
 }
 ```
 
-## Error Handling
+---
 
-### UpdateOrganization Exceptions
+## Requirements
 
-```php
-try {
-    UpdateOrganization::run($organization, $user, $data);
-} catch (\Illuminate\Validation\ValidationException $e) {
-    // Handle validation errors
-    $errors = $e->errors();
-} catch (\Exception $e) {
-    // Handle permission errors
-    // Message: "You do not have permission to update this organization."
-}
-```
-
-### DeleteOrganization Exceptions
-
-```php
-try {
-    DeleteOrganization::run($organization, $user);
-} catch (\Exception $e) {
-    // Possible messages:
-    // - "Only the organization owner can delete the organization."
-    // - "Cannot delete your only organization. You must have at least one organization."
-    // - "Cannot delete your current organization. Please switch to another organization first."
-    // - "Cannot delete organization with active members. Remove all members first."
-}
-```
+- Laravel 11+
+- Livewire 3.0+ (for components)
+- Alpine.js 3.0+ (for components)
+- Tailwind CSS 3.0+ (for components)
 
 ## Testing Actions
 
@@ -410,6 +641,7 @@ it('can delete organization when rules are met', function () {
 ## Best Practices
 
 ### 1. Use Static Helper Methods
+
 ```php
 // Get validation rules for forms
 $rules = UpdateOrganization::rules($organization);
@@ -423,6 +655,7 @@ if (!$eligibility['can_delete']) {
 ```
 
 ### 2. Handle Exceptions Gracefully
+
 ```php
 try {
     $result = UpdateOrganization::run($organization, $user, $data);
@@ -436,6 +669,7 @@ try {
 ```
 
 ### 3. Use in Services for Complex Logic
+
 ```php
 // Create a service that uses actions
 class OrganizationService
@@ -452,6 +686,7 @@ class OrganizationService
 ```
 
 ### 4. Extend Actions for Custom Behavior
+
 ```php
 namespace App\Actions;
 
@@ -475,35 +710,8 @@ class UpdateOrganization extends BaseUpdateOrganization
 }
 ```
 
-## Migration from Direct Model Usage
-
-### Before (Direct Model Updates)
-```php
-$organization->update([
-    'name' => $request->name,
-    'description' => $request->description,
-]);
-```
-
-### After (Using Actions)
-```php
-UpdateOrganization::run($organization, auth()->user(), [
-    'name' => $request->name,
-    'description' => $request->description,
-]);
-```
-
-### Benefits
-- ✅ Consistent validation across application
-- ✅ Permission checks enforced
-- ✅ Business rules centralized
-- ✅ Easy to test
-- ✅ Reusable in multiple contexts
-- ✅ Can be queued if needed
-- ✅ Can be used in console commands
-
 ## Related Documentation
 
-- [CreateNewOrganization](./USAGE.md#creating-organizations)
-- [Organization Deletion Rules](./ORGANIZATION_DELETION_RULES.md)
+- [Usage Guide](usage.md)
+- [Configuration Guide](configuration.md)
 - [Laravel Actions Package](https://laravelactions.com/)

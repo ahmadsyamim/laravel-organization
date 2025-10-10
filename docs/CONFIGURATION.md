@@ -17,6 +17,7 @@ The main configuration file is located at `config/organization.php` after publis
 ```
 
 Specify the User model class that will be used throughout the organization system. The model should:
+
 - Extend `Illuminate\Foundation\Auth\User`
 - Implement authentication contracts
 - Optionally implement `UserOrganizationContract` for better integration
@@ -28,6 +29,7 @@ Specify the User model class that will be used throughout the organization syste
 ```
 
 Specify the Organization model class. For custom implementations, the model should:
+
 - Extend `CleaniqueCoders\LaravelOrganization\Models\Organization` OR
 - Implement the required contracts:
   - `OrganizationContract`

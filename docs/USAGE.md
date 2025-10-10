@@ -125,6 +125,69 @@ $organization->setUserActiveStatus($user, true);  // Activate
 $organization->removeUser($user);
 ```
 
+### Deleting Organizations
+
+Organizations can be permanently deleted using the `DeleteOrganization` action, but the deletion must comply with specific business rules:
+
+```php
+use CleaniqueCoders\LaravelOrganization\Actions\DeleteOrganization;
+
+// Attempt to delete an organization
+$result = DeleteOrganization::run($organization, $user);
+
+// Check result
+if ($result['success']) {
+    // Organization deleted successfully
+    $deletedId = $result['deleted_organization_id'];
+    $deletedName = $result['deleted_organization_name'];
+}
+```
+
+#### Organization Deletion Rules
+
+Before an organization can be deleted, the following business rules must be satisfied:
+
+1. **Owner-Only Deletion**: Only the organization owner can delete it
+2. **Minimum Organization Requirement**: Users must maintain at least one organization
+3. **Active Organization Protection**: Cannot delete the currently active organization
+4. **Member Removal Requirement**: All active members (excluding owner) must be removed first
+5. **Name Confirmation Required**: Users must type the exact organization name to confirm deletion
+
+#### Checking Deletion Eligibility
+
+Before attempting deletion, you can check if an organization can be deleted:
+
+```php
+$eligibility = DeleteOrganization::canDelete($organization, $user);
+
+if ($eligibility['can_delete']) {
+    // Organization can be deleted
+    $result = DeleteOrganization::run($organization, $user);
+} else {
+    // Show the reason why deletion is not allowed
+    echo $eligibility['reason'];
+}
+```
+
+#### Deletion Error Messages
+
+| Scenario | Error Message |
+|----------|--------------|
+| Only one organization | "Cannot delete your only organization. You must have at least one organization." |
+| Current organization | "Cannot delete your current organization. Please switch to another organization first." |
+| Has active members | "Cannot delete organization with active members. Remove all members first." |
+| Not owner | "Only the organization owner can delete the organization." |
+| Name mismatch | "Organization name does not match." |
+
+#### Deletion Type
+
+Organizations are **permanently deleted** using `forceDelete()`, which means:
+
+- The deletion is immediate and irreversible
+- All organization data is removed from the database
+- There is no soft delete recovery option
+- Users must be fully aware of the consequences
+
 ## Working with Roles
 
 ### Using the OrganizationRole Enum
@@ -310,6 +373,7 @@ class Post extends Model implements OrganizationScopingContract
 ```
 
 Now your `Post` model will automatically:
+
 - Be scoped to the authenticated user's organization
 - Have `organization_id` set automatically when creating new records
 - Provide scoping methods for bypassing or targeting specific organizations

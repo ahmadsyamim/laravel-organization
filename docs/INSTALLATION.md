@@ -123,6 +123,6 @@ php artisan user:create-org user@example.com --organization_name="Test Org"
 
 ## Next Steps
 
-- Read the [Usage Guide](USAGE.md) to learn how to use the package
-- Check [Contracts Documentation](CONTRACTS.md) for implementing custom models
-- See [Configuration Guide](CONFIGURATION.md) for detailed configuration options
+- Read the [Usage Guide](usage.md) to learn how to use the package
+- Check [Contracts Documentation](contracts.md) for implementing custom models
+- See [Configuration Guide](configuration.md) for detailed configuration options

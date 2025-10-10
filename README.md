@@ -60,11 +60,12 @@ class Post extends Model
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **[📖 Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
-- **[🚀 Usage Guide](docs/USAGE.md)** - Complete usage examples and patterns
-- **[⚙️ Configuration](docs/CONFIGURATION.md)** - All configuration options and customization
-- **[🎯 Features Overview](docs/FEATURES.md)** - Complete feature breakdown
-- **[🔧 Contracts Documentation](docs/CONTRACTS.md)** - SOLID principles and custom implementations
+- **[📖 Installation Guide](docs/installation.md)** - Detailed setup instructions
+- **[🚀 Usage Guide](docs/usage.md)** - Complete usage examples and patterns
+- **[⚙️ Configuration](docs/configuration.md)** - All configuration options and customization
+- **[🎯 Features Overview](docs/features.md)** - Complete feature breakdown
+- **[🔧 Contracts Documentation](docs/contracts.md)** - SOLID principles and custom implementations
+- **[🧩 Components & Actions](docs/components-and-actions.md)** - Livewire components and action classes
 
 ## Requirements
 

@@ -202,7 +202,9 @@ return [
 ## SOLID Principles Compliance
 
 ### Single Responsibility Principle (SRP)
+
 Each contract has a single, well-defined responsibility:
+
 - `OrganizationContract`: Core organization identity
 - `OrganizationMembershipContract`: User membership management
 - `OrganizationOwnershipContract`: Ownership management
@@ -211,15 +213,19 @@ Each contract has a single, well-defined responsibility:
 - `UserOrganizationContract`: User-side organization interactions
 
 ### Open/Closed Principle (OCP)
+
 The contracts are open for extension but closed for modification. You can implement your own models that extend functionality without changing the contracts.
 
 ### Liskov Substitution Principle (LSP)
+
 Any implementation of these contracts can be substituted for another without affecting the application's correctness.
 
 ### Interface Segregation Principle (ISP)
+
 Contracts are segregated by functionality, so implementations only need to depend on the interfaces they actually use.
 
 ### Dependency Inversion Principle (DIP)
+
 High-level modules depend on abstractions (contracts) rather than concrete implementations, making the system more flexible and testable.
 
 ## Testing with Contracts
