@@ -3,6 +3,10 @@
 namespace CleaniqueCoders\LaravelOrganization\Models;
 
 use CleaniqueCoders\LaravelOrganization\Concerns\InteractsWithOrganizationSettings;
+use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationContract;
+use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationMembershipContract;
+use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationOwnershipContract;
+use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationSettingsContract;
 use CleaniqueCoders\LaravelOrganization\Enums\OrganizationRole;
 use CleaniqueCoders\Traitify\Concerns\InteractsWithSlug;
 use CleaniqueCoders\Traitify\Concerns\InteractsWithUuid;
@@ -13,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User;
 
-class Organization extends Model
+class Organization extends Model implements OrganizationContract, OrganizationMembershipContract, OrganizationOwnershipContract, OrganizationSettingsContract
 {
     use HasFactory;
     use InteractsWithOrganizationSettings;
@@ -203,5 +207,92 @@ class Organization extends Model
     public function userHasRole(User $user, OrganizationRole $role): bool
     {
         return $this->getUserRole($user) === $role;
+    }
+
+    // Implementation of OrganizationContract methods
+
+    /**
+     * Get the organization's unique identifier.
+     */
+    public function getId()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Get the organization's UUID.
+     */
+    public function getUuid(): string
+    {
+        return $this->uuid;
+    }
+
+    /**
+     * Get the organization's name.
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get the organization's slug.
+     */
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
+
+    /**
+     * Get the organization's description.
+     */
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Check if the organization is active (not soft deleted).
+     */
+    public function isActive(): bool
+    {
+        return $this->deleted_at === null;
+    }
+
+    // Implementation of OrganizationOwnershipContract methods
+
+    /**
+     * Get the owner ID.
+     */
+    public function getOwnerId()
+    {
+        return $this->owner_id;
+    }
+
+    /**
+     * Set the owner of the organization.
+     */
+    public function setOwner(User $user): void
+    {
+        $this->owner_id = $user->id;
+    }
+
+    /**
+     * Transfer ownership to another user.
+     */
+    public function transferOwnership(User $newOwner): void
+    {
+        $this->setOwner($newOwner);
+        $this->save();
+    }
+
+    // Implementation of OrganizationSettingsContract methods
+
+    /**
+     * Get all settings as array.
+     */
+    public function getAllSettings(): array
+    {
+        return $this->settings ?? [];
     }
 }

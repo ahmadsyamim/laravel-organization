@@ -26,6 +26,8 @@ return [
     | - Organization membership relationships
     | - Authentication and authorization within organizations
     |
+    | For better SOLID compliance, consider implementing UserOrganizationContract.
+    |
     | Default: Illuminate\Foundation\Auth\User::class
     |
     */
@@ -46,6 +48,12 @@ return [
     | - Organization relationships with users and other entities
     | - Organization settings and configuration storage
     | - Multi-tenancy and organization scoping
+    |
+    | For better SOLID compliance, the model should implement:
+    | - OrganizationContract (core functionality)
+    | - OrganizationMembershipContract (user management)
+    | - OrganizationOwnershipContract (ownership management)
+    | - OrganizationSettingsContract (settings management)
     |
     | Default: CleaniqueCoders\LaravelOrganization\Models\Organization::class
     |

@@ -2,10 +2,18 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Concerns;
 
+use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationScopingContract;
 use CleaniqueCoders\LaravelOrganization\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Trait for models that are scoped to organizations.
+ *
+ * Models using this trait should implement OrganizationScopingContract
+ * to ensure they provide all required organization scoping functionality.
+ */
 trait InteractsWithOrganization
 {
     /**
@@ -27,7 +35,7 @@ trait InteractsWithOrganization
     /**
      * Define the relationship to organization.
      */
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(config('organization.organization-model'));
     }
@@ -55,5 +63,13 @@ trait InteractsWithOrganization
     public static function getCurrentOrganizationId(): ?int
     {
         return Auth::check() ? Auth::user()->organization_id : null;
+    }
+
+    /**
+     * Get the organization ID for this model.
+     */
+    public function getOrganizationId()
+    {
+        return $this->organization_id;
     }
 }
