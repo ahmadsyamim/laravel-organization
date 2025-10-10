@@ -2,7 +2,6 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Concerns;
 
-use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;

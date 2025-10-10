@@ -59,15 +59,25 @@ $organization->setSetting('features.api_access', true);
 $organization->save();
 ```
 
-### Add to Your Models
+### Add to Your User Model
 
 ```php
-use CleaniqueCoders\LaravelOrganization\Concerns\InteractsWithOrganization;
+use CleaniqueCoders\LaravelOrganization\Concerns\InteractsWithUserOrganization;
+use CleaniqueCoders\LaravelOrganization\Contracts\UserOrganizationContract;
 
-class Post extends Model
+class User extends Authenticatable implements UserOrganizationContract
 {
-    use InteractsWithOrganization; // Automatic organization scoping
+    use InteractsWithUserOrganization;
+
+    protected $fillable = ['name', 'email', 'password', 'organization_id'];
 }
+
+// Now you can:
+$user->organizations;              // Get all user's organizations
+$user->currentOrganization;        // Get current organization
+$user->ownedOrganizations;         // Get organizations user owns
+$user->belongsToOrganization($id); // Check membership
+$user->isAdministratorOf($id);     // Check admin role
 ```
 
 ## Documentation

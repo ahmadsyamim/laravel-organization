@@ -337,7 +337,120 @@ $organization->setSetting('security.allowed_domains', ['company.com']);
 
 ## Automatic Data Scoping
 
-### User Model Scoping
+### User Model with Organization Relationships
+
+The `InteractsWithUserOrganization` trait provides comprehensive user-organization relationship management. Add this trait to your User model:
+
+```php
+use CleaniqueCoders\LaravelOrganization\Concerns\InteractsWithUserOrganization;
+use CleaniqueCoders\LaravelOrganization\Contracts\UserOrganizationContract;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable implements UserOrganizationContract
+{
+    use InteractsWithUserOrganization;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'organization_id', // Current organization
+    ];
+}
+```
+
+#### Managing User's Current Organization
+
+```php
+$user = User::find(1);
+
+// Get current organization ID
+$currentOrgId = $user->getOrganizationId();
+
+// Set/switch to different organization
+$user->setOrganizationId($organization->id);
+$user->save();
+
+// Get current organization (relationship)
+$currentOrg = $user->currentOrganization;
+```
+
+#### Checking Organization Membership
+
+```php
+$user = User::find(1);
+
+// Check if user belongs to an organization (as member or owner)
+if ($user->belongsToOrganization($organizationId)) {
+    // User is member or owner of this organization
+}
+
+// Check if user is the owner
+if ($user->ownsOrganization($organizationId)) {
+    // User owns this organization
+}
+
+// Check if user is a member
+if ($user->isMemberOf($organizationId)) {
+    // User is a member (includes admins and owner)
+}
+
+// Check if user is an administrator
+if ($user->isAdministratorOf($organizationId)) {
+    // User has admin privileges (or is owner)
+}
+```
+
+#### Getting User's Organizations
+
+```php
+$user = User::find(1);
+
+// Get all organizations user belongs to
+$allOrgs = $user->organizations;
+
+// Get only active memberships
+$activeOrgs = $user->activeOrganizations;
+
+// Get organizations user owns
+$ownedOrgs = $user->ownedOrganizations;
+
+// Get organizations where user is administrator
+$adminOrgs = $user->administratedOrganizations;
+```
+
+#### Checking User Roles
+
+```php
+use CleaniqueCoders\LaravelOrganization\Enums\OrganizationRole;
+
+$user = User::find(1);
+
+// Check specific role in organization
+if ($user->hasRoleInOrganization($organizationId, 'administrator')) {
+    // User has administrator role
+}
+
+// Works with enum too
+if ($user->hasRoleInOrganization($organizationId, OrganizationRole::MEMBER->value)) {
+    // User has member role
+}
+```
+
+#### Accessing Pivot Data
+
+```php
+// The organizations relationship includes pivot data
+foreach ($user->organizations as $organization) {
+    $role = $organization->pivot->role;           // 'member' or 'administrator'
+    $isActive = $organization->pivot->is_active;  // true/false
+    $joinedAt = $organization->pivot->created_at;
+
+    echo "Role: {$role}, Active: {$isActive}";
+}
+```
+
+### Other Models with Organization Scoping
 
 The package automatically applies organization scoping to models using the `InteractsWithOrganization` trait:
 

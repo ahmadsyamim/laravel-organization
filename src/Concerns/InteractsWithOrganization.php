@@ -2,7 +2,6 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Concerns;
 
-use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationScopingContract;
 use CleaniqueCoders\LaravelOrganization\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
