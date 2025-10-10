@@ -2,6 +2,8 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Livewire;
 
+use CleaniqueCoders\LaravelOrganization\Actions\DeleteOrganization;
+use CleaniqueCoders\LaravelOrganization\Actions\UpdateOrganization;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
@@ -140,24 +142,24 @@ class ManageOrganization extends Component
         }
 
         $user = Auth::user();
-        if (! $this->organization->isOwnedBy($user) && ! $this->isUserAdministrator($user)) {
-            $this->errorMessage = 'You do not have permission to update this organization.';
-
-            return;
-        }
 
         try {
-            $this->organization->update([
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
+            // Use the UpdateOrganization action
+            $updatedOrganization = UpdateOrganization::run(
+                $this->organization,
+                $user,
+                [
+                    'name' => $this->name,
+                    'description' => $this->description,
+                ]
+            );
 
             $this->closeModal();
 
             // Emit events
-            $this->dispatch('organization-updated', organizationId: $this->organization->id);
+            $this->dispatch('organization-updated', organizationId: $updatedOrganization->id);
 
-            session()->flash('message', "Organization '{$this->organization->name}' updated successfully!");
+            session()->flash('message', "Organization '{$updatedOrganization->name}' updated successfully!");
 
             // Refresh the page
             return redirect()->to(request()->url());
@@ -198,58 +200,23 @@ class ManageOrganization extends Component
         }
 
         $user = Auth::user();
-        if (! $this->organization->isOwnedBy($user)) {
-            $this->errorMessage = 'Only the organization owner can delete the organization.';
-
-            return;
-        }
-
-        // Check if user only has one organization
-        $userOrganizationCount = Organization::where('owner_id', $user->id)->count();
-
-        if ($userOrganizationCount <= 1) {
-            $this->errorMessage = 'Cannot delete your only organization. You must have at least one organization.';
-
-            return;
-        }
-
-        // Check if this is the user's current organization
-        if (property_exists($user, 'organization_id') &&
-            $user->organization_id === $this->organization->id) {
-            $this->errorMessage = 'Cannot delete your current organization. Please switch to another organization first.';
-
-            return;
-        }
-
-        // Check if organization has active members (excluding owner)
-        $activeMembersCount = $this->organization->activeUsers()
-            ->where('user_id', '!=', $user->id)
-            ->count();
-
-        if ($activeMembersCount > 0) {
-            $this->errorMessage = 'Cannot delete organization with active members. Remove all members first.';
-
-            return;
-        }
 
         try {
-            $organizationName = $this->organization->name;
-
-            // Permanently delete the organization (force delete)
-            $this->organization->forceDelete();
+            // Use the DeleteOrganization action
+            $result = DeleteOrganization::run($this->organization, $user);
 
             $this->closeModal();
 
             // Emit events
-            $this->dispatch('organization-deleted', organizationId: $this->organization->id);
+            $this->dispatch('organization-deleted', organizationId: $result['deleted_organization_id']);
 
-            session()->flash('message', "Organization '{$organizationName}' has been permanently deleted!");
+            session()->flash('message', $result['message']);
 
             // Refresh the page
             return redirect()->to(request()->url());
 
         } catch (\Exception $e) {
-            $this->errorMessage = 'Failed to delete organization: '.$e->getMessage();
+            $this->errorMessage = $e->getMessage();
         }
     }
 
