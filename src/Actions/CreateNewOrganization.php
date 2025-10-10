@@ -67,14 +67,6 @@ class CreateNewOrganization
      */
     public function handle(User $user, bool $default = true, ?string $customName = null, ?string $customDescription = null): Organization
     {
-        // Prevent creating duplicate default organizations
-        if ($default && $user->organization_id) {
-            $existingOrganization = Organization::find($user->organization_id);
-            if ($existingOrganization) {
-                throw new \InvalidArgumentException("User already has a default organization: {$existingOrganization->name}");
-            }
-        }
-
         // Generate organization name: use custom name or default pattern
         $organizationName = $customName ?? (explode(' ', $user->name, 2)[0]."'s Organization");
 

@@ -40,8 +40,8 @@ class OrganizationWidget extends Component
     {
         $user = Auth::user();
 
-        if ($user && property_exists($user, 'current_organization_id')) {
-            $this->currentOrganization = $user->currentOrganization ?? Organization::find($user->current_organization_id);
+        if ($user && property_exists($user, 'organization_id')) {
+            $this->currentOrganization = $user->currentOrganization ?? Organization::find($user->organization_id);
         }
     }
 

@@ -59,6 +59,8 @@ Route::post('/register', function (Request $request) {
 
     Auth::login($user);
 
+    CreateNewOrganization::run($user);
+
     return redirect('/dashboard');
 })->name('register.store');
 

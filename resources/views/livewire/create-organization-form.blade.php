@@ -101,20 +101,6 @@
                             {{ strlen($description) }}/1000 characters
                         </p>
                     </div>
-
-                    <!-- Set as Current Organization -->
-                    <div class="flex items-center">
-                        <input wire:model="setAsCurrent"
-                               id="set-as-current"
-                               type="checkbox"
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="set-as-current" class="ml-2 block text-sm text-gray-900">
-                            Set as current organization
-                        </label>
-                    </div>
-                    <p class="text-xs text-gray-500 ml-6 -mt-2">
-                        Switch to this organization immediately after creation
-                    </p>
                 </div>
 
                 <!-- Action Buttons -->

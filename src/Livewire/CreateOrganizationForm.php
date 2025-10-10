@@ -3,7 +3,6 @@
 namespace CleaniqueCoders\LaravelOrganization\Livewire;
 
 use CleaniqueCoders\LaravelOrganization\Actions\CreateNewOrganization;
-use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -16,7 +15,7 @@ class CreateOrganizationForm extends Component
 
     public string $description = '';
 
-    public bool $setAsCurrent = true;
+    public bool $setAsCurrent = false;
 
     protected function rules()
     {
@@ -79,15 +78,13 @@ class CreateOrganizationForm extends Component
 
         try {
             // Create organization using the action
-            $organization = CreateNewOrganization::run($user, [
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
-
-            // If setAsCurrent is true, switch to this organization
-            if ($this->setAsCurrent && method_exists($user, 'update')) {
-                $user->update(['current_organization_id' => $organization->id]);
-            }
+            // Pass setAsCurrent as the 'default' parameter to determine if this should be the user's default org
+            $organization = CreateNewOrganization::run(
+                $user,
+                $this->setAsCurrent, // Whether this is the default organization
+                $this->name,
+                $this->description ?: null
+            );
 
             // Reset form
             $this->reset(['name', 'description', 'setAsCurrent']);
@@ -103,6 +100,7 @@ class CreateOrganizationForm extends Component
             return redirect()->to(request()->url());
 
         } catch (\Exception $e) {
+            dd($e->getMessage());
             session()->flash('error', 'Failed to create organization: '.$e->getMessage());
         }
     }

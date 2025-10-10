@@ -205,9 +205,9 @@ class ManageOrganization extends Component
             $organizationName = $this->organization->name;
 
             // If this is the user's current organization, clear it
-            if (property_exists($user, 'current_organization_id') &&
-                $user->current_organization_id === $this->organization->id) {
-                $user->update(['current_organization_id' => null]);
+            if (property_exists($user, 'organization_id') &&
+                $user->organization_id === $this->organization->id) {
+                $user->update(['organization_id' => null]);
             }
 
             // Soft delete the organization

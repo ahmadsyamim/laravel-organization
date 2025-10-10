@@ -19,8 +19,8 @@ class OrganizationSwitcher extends Component
     {
         $user = Auth::user();
 
-        if ($user && property_exists($user, 'current_organization_id')) {
-            $this->currentOrganization = $user->currentOrganization ?? Organization::find($user->current_organization_id);
+        if ($user && property_exists($user, 'organization_id')) {
+            $this->currentOrganization = $user->currentOrganization ?? Organization::find($user->organization_id);
         }
 
         $this->loadOrganizations();
@@ -69,7 +69,7 @@ class OrganizationSwitcher extends Component
 
         // Update user's current organization
         if (method_exists($user, 'update') && $user->getTable()) {
-            $user->update(['current_organization_id' => $organization->id]);
+            $user->update(['organization_id' => $organization->id]);
         }
 
         $this->currentOrganization = $organization;
