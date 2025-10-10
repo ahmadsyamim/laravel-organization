@@ -16,6 +16,20 @@ A comprehensive Laravel package for implementing organization-based tenancy in y
 - **🧩 SOLID Principles** - Contract-based architecture for flexibility and testability
 - **🛠️ Developer Friendly** - Built-in factories, commands, and trait-based integration
 
+## Screenshots
+
+### Organization Management
+
+![Organization Dashboard](screenshots/organization.png)
+
+### Organization Switcher
+
+![Organization Switcher](screenshots/organization-switcher.png)
+
+### Create New Organization
+
+![Create New Organization](screenshots/create-new-organization.png)
+
 ## Quick Start
 
 ### Installation
