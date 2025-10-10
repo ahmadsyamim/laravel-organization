@@ -39,6 +39,12 @@ class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
+        // Set encryption key for Livewire tests
+        config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+
+        // Configure the User model to use our test fixture
+        config()->set('organization.user-model', User::class);
+
         // Create users table for testing
         Schema::create('users', function (Blueprint $table) {
             $table->id();
