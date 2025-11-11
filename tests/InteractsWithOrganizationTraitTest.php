@@ -119,6 +119,18 @@ describe('InteractsWithOrganization Trait Query Scopes', function () {
         expect($records)->toHaveCount(4);
     });
 
+    it('allOrganizations scope removes global organization scope', function () {
+        Auth::login($this->user1);
+
+        // Without allOrganizations, should only see org1 records (2)
+        $scoped = TestTraitModel::count();
+        expect($scoped)->toBe(2);
+
+        // With allOrganizations, should see all records (4)
+        $unscoped = TestTraitModel::allOrganizations()->count();
+        expect($unscoped)->toBe(4);
+    });
+
     it('can query specific organization using forOrganization scope', function () {
         Auth::login($this->user1);
 

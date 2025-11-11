@@ -508,6 +508,120 @@ describe('Invitation System', function () {
                 ->and(Invitation::count())->toBe(0)
                 ->and(Invitation::withTrashed()->count())->toBe(1);
         });
+
+        it('can get invitation ID', function () {
+            $invitation = Invitation::factory()->create();
+
+            expect($invitation->getId())->toBe($invitation->id)
+                ->and($invitation->getId())->toBeInt();
+        });
+
+        it('can get invitation UUID', function () {
+            $invitation = Invitation::factory()->create();
+
+            expect($invitation->getUuid())->toBeString()
+                ->and($invitation->getUuid())->toBe((string) $invitation->uuid);
+        });
+
+        it('can get invitation email', function () {
+            $invitation = Invitation::factory()->create(['email' => 'test@example.com']);
+
+            expect($invitation->getEmail())->toBe('test@example.com');
+        });
+
+        it('can get invitation token', function () {
+            $invitation = Invitation::factory()->create();
+
+            expect($invitation->getToken())->toBe($invitation->token)
+                ->and($invitation->getToken())->toBeString();
+        });
+
+        it('can get organization ID', function () {
+            $invitation = Invitation::factory()->create();
+
+            expect($invitation->getOrganizationId())->toBe($invitation->organization_id)
+                ->and($invitation->getOrganizationId())->toBeInt();
+        });
+
+        it('can get invited by user ID', function () {
+            $invitedBy = UserFactory::new()->create();
+            $invitation = Invitation::factory()->forInvitedBy($invitedBy)->create();
+
+            expect($invitation->getInvitedByUserId())->toBe($invitedBy->id)
+                ->and($invitation->getInvitedByUserId())->toBeInt();
+        });
+
+        it('can get invited by user ID as null', function () {
+            $invitation = Invitation::factory()->create(['invited_by_user_id' => null]);
+
+            expect($invitation->getInvitedByUserId())->toBeNull();
+        });
+
+        it('can get invited user ID', function () {
+            $user = UserFactory::new()->create();
+            $invitation = Invitation::factory()->accepted()->create(['user_id' => $user->id]);
+
+            expect($invitation->getInvitedUserId())->toBe($user->id)
+                ->and($invitation->getInvitedUserId())->toBeInt();
+        });
+
+        it('can get invited user ID as null for pending invitations', function () {
+            $invitation = Invitation::factory()->pending()->create();
+
+            expect($invitation->getInvitedUserId())->toBeNull();
+        });
+
+        it('can get accepted at timestamp', function () {
+            $invitation = Invitation::factory()->accepted()->create();
+
+            expect($invitation->getAcceptedAt())->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+        });
+
+        it('can get accepted at timestamp as null for pending invitations', function () {
+            $invitation = Invitation::factory()->pending()->create();
+
+            expect($invitation->getAcceptedAt())->toBeNull();
+        });
+
+        it('can get declined at timestamp', function () {
+            $invitation = Invitation::factory()->declined()->create();
+
+            expect($invitation->getDeclinedAt())->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+        });
+
+        it('can get declined at timestamp as null for pending invitations', function () {
+            $invitation = Invitation::factory()->pending()->create();
+
+            expect($invitation->getDeclinedAt())->toBeNull();
+        });
+
+        it('can get expires at timestamp', function () {
+            $invitation = Invitation::factory()->create();
+
+            expect($invitation->getExpiresAt())->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+        });
+
+        it('can accept invitation and return self', function () {
+            $invitation = Invitation::factory()->pending()->create();
+            $user = UserFactory::new()->create();
+
+            $result = $invitation->accept($user);
+
+            expect($result)->toBeInstanceOf(Invitation::class)
+                ->and($result->id)->toBe($invitation->id)
+                ->and($invitation->user_id)->toBe($user->id)
+                ->and($invitation->accepted_at)->not->toBeNull();
+        });
+
+        it('can decline invitation and return self', function () {
+            $invitation = Invitation::factory()->pending()->create();
+
+            $result = $invitation->decline();
+
+            expect($result)->toBeInstanceOf(Invitation::class)
+                ->and($result->id)->toBe($invitation->id)
+                ->and($invitation->declined_at)->not->toBeNull();
+        });
     });
 
     describe('Invitation Events', function () {

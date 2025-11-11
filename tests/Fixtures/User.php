@@ -2,10 +2,13 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Tests\Fixtures;
 
+use CleaniqueCoders\LaravelOrganization\Concerns\InteractsWithUserOrganization;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    use InteractsWithUserOrganization;
+
     protected $fillable = [
         'name',
         'email',
