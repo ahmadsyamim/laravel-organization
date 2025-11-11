@@ -72,11 +72,37 @@ Route::post('/logout', function (Request $request) {
     return redirect('/');
 })->name('logout');
 
+// Invitation Routes (can be accessed by anyone with the token)
+Route::get('/invitations/accept/{token}', function ($token) {
+    $invitation = \CleaniqueCoders\LaravelOrganization\Models\Invitation::where('token', $token)->firstOrFail();
+
+    if (Auth::check() && Auth::user()->email === $invitation->email) {
+        (new \CleaniqueCoders\LaravelOrganization\Actions\AcceptInvitation)->handle($invitation, Auth::user());
+
+        return redirect('/invitations')->with('success', 'Invitation accepted successfully!');
+    }
+
+    // If not logged in, prompt to login/register with that email
+    return redirect('/login')->with('email', $invitation->email);
+})->name('invitations.accept');
+
+Route::get('/invitations/decline/{token}', function ($token) {
+    $invitation = \CleaniqueCoders\LaravelOrganization\Models\Invitation::where('token', $token)->firstOrFail();
+
+    (new \CleaniqueCoders\LaravelOrganization\Actions\DeclineInvitation)->handle($invitation);
+
+    return redirect('/')->with('success', 'Invitation declined.');
+})->name('invitations.decline');
+
 // Protected Routes (require authentication)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/invitations', function () {
+        return view('invitations');
+    })->name('invitations');
 
     Route::get('/organizations', function () {
         /** @var \Workbench\App\Models\User $user */

@@ -92,5 +92,28 @@ class TestCase extends Orchestra
             $table->index(['organization_id', 'role']);
             $table->index(['user_id', 'role']);
         });
+
+        // Create invitations table
+        Schema::create('invitations', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignIdFor(Organization::class)->constrained('organizations')->cascadeOnDelete();
+            $table->foreignId('invited_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('email')->index();
+            $table->string('token')->unique();
+            $table->string('role');
+            $table->timestamp('accepted_at')->nullable();
+            $table->timestamp('declined_at')->nullable();
+            $table->timestamp('expires_at');
+            $table->softDeletes();
+            $table->timestamps();
+
+            // Composite index for querying pending invitations by organization and email
+            $table->index(['organization_id', 'email', 'accepted_at', 'declined_at']);
+
+            // Index for finding invitations by token
+            $table->index('token');
+        });
     }
 }

@@ -9,12 +9,16 @@ use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationMembershipContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationOwnershipContract;
 use CleaniqueCoders\LaravelOrganization\Contracts\OrganizationSettingsContract;
+use CleaniqueCoders\LaravelOrganization\Events\InvitationSent;
+use CleaniqueCoders\LaravelOrganization\Listeners\SendInvitationEmail;
 use CleaniqueCoders\LaravelOrganization\Livewire\CreateOrganization;
+use CleaniqueCoders\LaravelOrganization\Livewire\InvitationManager;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationList;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationSwitcher;
 use CleaniqueCoders\LaravelOrganization\Livewire\UpdateOrganization;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use CleaniqueCoders\LaravelOrganization\Policies\OrganizationPolicy;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
@@ -34,6 +38,7 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigration('create_organization_table')
+            ->hasMigration('create_invitations_table')
             ->hasCommands([
                 CreateOrganizationCommand::class,
                 DeleteOrganizationCommand::class,
@@ -67,12 +72,16 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
         // Register the OrganizationPolicy
         Gate::policy(Organization::class, OrganizationPolicy::class);
 
+        // Register event listeners
+        Event::listen(InvitationSent::class, SendInvitationEmail::class);
+
         // Register Livewire components
         if (class_exists(Livewire::class)) {
             Livewire::component('org::switcher', OrganizationSwitcher::class);
             Livewire::component('org::create', CreateOrganization::class);
             Livewire::component('org::update', UpdateOrganization::class);
             Livewire::component('org::list', OrganizationList::class);
+            Livewire::component('org::invitation-manager', InvitationManager::class);
         }
     }
 }
