@@ -20,6 +20,18 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <coverage
+        includeUncoveredFiles="true"
+        pathCoverage="false"
+        ignoreDeprecatedCodeUnits="true"
+        disableCodeCoverageIgnore="true"
+    >
+        <report>
+            <html outputDirectory="build/coverage"/>
+            <text outputFile="build/coverage.txt"/>
+            <clover outputFile="build/logs/clover.xml"/>
+        </report>
+    </coverage>
     <logging>
         <junit outputFile="build/report.junit.xml"/>
     </logging>
@@ -27,5 +39,9 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
+        <exclude>
+            <directory suffix=".php">./src/Console</directory>
+            <file>./src/LaravelOrganizationServiceProvider.php</file>
+        </exclude>
     </source>
 </phpunit>

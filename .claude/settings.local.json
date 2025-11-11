@@ -3,7 +3,14 @@
     "allow": [
       "Bash(composer test:*)",
       "Bash(composer analyse:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(composer test-coverage:*)",
+      "Bash(vendor/bin/pest:*)",
+      "Bash(php -v:*)",
+      "Bash(php -m:*)",
+      "Bash(pecl install:*)",
+      "Bash(php --ini:*)",
+      "Bash(php -i:*)"
     ],
     "deny": [],
     "ask": []
