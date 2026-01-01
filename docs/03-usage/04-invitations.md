@@ -76,17 +76,7 @@ Listeners can send emails, log activity, trigger webhooks.
 ## Livewire Component
 
 ![Invitation Management](../../screenshots/invitation.png)
-
-`<livewire:org::invitation-manager :organization="$organization" />` provides send, resend, accept/decline UI with notifications.
-
-Core methods:
-
-```php
-sendInvitation();
-resendInvitation($invitationId);
-acceptInvitation($invitationId);
-declineInvitation($invitationId);
-```
+cla
 
 ## Usage Examples
 
