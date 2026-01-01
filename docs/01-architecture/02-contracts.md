@@ -110,7 +110,7 @@ class ScopedModel extends Model implements OrganizationScopingContract
 
 ### 6. UserOrganizationContract
 
-For user models that interact with organizations.
+For user models that interact with organizations. Uses a **hybrid session/database approach** for organization context.
 
 ```php
 use CleaniqueCoders\LaravelOrganization\Contracts\UserOrganizationContract;
@@ -118,13 +118,53 @@ use CleaniqueCoders\LaravelOrganization\Contracts\UserOrganizationContract;
 class CustomUser extends User implements UserOrganizationContract
 {
     // Must implement user-organization methods:
+
+    // Get current organization (session first, then database)
     public function getOrganizationId();
+
+    // Set current organization (session only, no DB write)
     public function setOrganizationId($organizationId): void;
+
+    // Get default organization from database
+    public function getDefaultOrganizationId();
+
+    // Set default organization (writes to database AND session)
+    public function setDefaultOrganizationId($organizationId): void;
+
+    // Sync organization from database to session (call on login)
+    public function syncOrganizationFromDefault(): void;
+
+    // Check if user belongs to organization
     public function belongsToOrganization($organizationId): bool;
+
+    // Relationships
     public function organizations();
     public function ownedOrganizations();
 }
 ```
+
+#### Hybrid Session/Database Approach
+
+The `UserOrganizationContract` uses a hybrid approach for organization context:
+
+- **Session**: Used for active switching (no database writes)
+- **Database**: Stores the user's "default" organization
+
+```php
+// Switching (session only - fast, no DB writes)
+$user->setOrganizationId($organizationId);
+
+// Setting default (writes to database)
+$user->setDefaultOrganizationId($organizationId);
+
+// Getting current (checks session first, then database)
+$currentOrgId = $user->getOrganizationId();
+
+// Login: sync default to session
+$user->syncOrganizationFromDefault();
+```
+
+See [Organization Switching](../03-usage/05-organization-switching.md) for detailed usage.
 
 ## Using Contracts
 

@@ -11,7 +11,8 @@
       "Bash(pecl install:*)",
       "Bash(php --ini:*)",
       "Bash(php -i:*)",
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "Bash(markdownlint:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,11 @@ class CreateNewOrganization
 {
     use AsAction;
 
+    /**
+     * Session key for storing current organization ID.
+     */
+    protected const ORGANIZATION_SESSION_KEY = 'organization_current_id';
+
     public string $commandSignature = 'organization:create {email} {--organization_name=} {--description=}';
 
     public string $commandDescription = 'Create a new organization for a user';
@@ -59,6 +64,11 @@ class CreateNewOrganization
         if ($default) {
             $user->setAttribute('organization_id', $organization->id);
             $user->save();
+
+            // Also set in session for immediate use (if session is available)
+            if (function_exists('session')) {
+                session([self::ORGANIZATION_SESSION_KEY => $organization->id]);
+            }
         }
 
         // Dispatch the OrganizationCreated event

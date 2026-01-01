@@ -11,23 +11,82 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Models using this trait should implement UserOrganizationContract
  * to ensure they provide all required user-organization functionality.
+ *
+ * Uses a hybrid session/database approach:
+ * - Session: Used for active switching (no DB writes during switching)
+ * - Database: Stores "default" organization loaded on login
  */
 trait InteractsWithUserOrganization
 {
     /**
+     * Session key for storing current organization ID.
+     */
+    protected const ORGANIZATION_SESSION_KEY = 'organization_current_id';
+
+    /**
      * Get the user's current organization ID.
+     *
+     * Checks session first, then falls back to database (default organization).
      */
     public function getOrganizationId()
+    {
+        // Check session first (for active switching without DB writes)
+        if (session()->has(self::ORGANIZATION_SESSION_KEY)) {
+            return session(self::ORGANIZATION_SESSION_KEY);
+        }
+
+        // Fallback to database (default organization)
+        return $this->organization_id;
+    }
+
+    /**
+     * Set the user's current organization ID (session-based, no DB write).
+     */
+    public function setOrganizationId($organizationId): void
+    {
+        session([self::ORGANIZATION_SESSION_KEY => $organizationId]);
+    }
+
+    /**
+     * Get the user's default organization ID from database.
+     */
+    public function getDefaultOrganizationId()
     {
         return $this->organization_id;
     }
 
     /**
-     * Set the user's organization ID.
+     * Set the user's default organization ID (persisted to database).
      */
-    public function setOrganizationId($organizationId): void
+    public function setDefaultOrganizationId($organizationId): void
     {
         $this->organization_id = $organizationId;
+        $this->save();
+
+        // Also update session to keep in sync
+        session([self::ORGANIZATION_SESSION_KEY => $organizationId]);
+    }
+
+    /**
+     * Sync organization from default (load DB value into session).
+     *
+     * Call this on login to initialize session with user's default organization.
+     */
+    public function syncOrganizationFromDefault(): void
+    {
+        if ($this->organization_id) {
+            session([self::ORGANIZATION_SESSION_KEY => $this->organization_id]);
+        }
+    }
+
+    /**
+     * Clear the organization session.
+     *
+     * Call this on logout to clean up session.
+     */
+    public function clearOrganizationSession(): void
+    {
+        session()->forget(self::ORGANIZATION_SESSION_KEY);
     }
 
     /**

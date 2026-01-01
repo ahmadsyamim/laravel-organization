@@ -109,8 +109,11 @@ describe('OrganizationSwitcher Livewire Component Switch Organization', function
             ->assertSet('currentOrganization.id', $org2->id)
             ->assertSet('errorMessage', null);
 
+        // Switching now uses session, not database
+        expect(session('organization_current_id'))->toBe($org2->id);
+        // Database should remain unchanged after switch
         $this->user->refresh();
-        expect($this->user->organization_id)->toBe($org2->id);
+        expect($this->user->organization_id)->toBeNull();
     });
 
     it('can switch to member organization', function () {
@@ -124,8 +127,22 @@ describe('OrganizationSwitcher Livewire Component Switch Organization', function
             ->call('switchOrganization', $org2->id)
             ->assertSet('currentOrganization.id', $org2->id);
 
+        // Switching now uses session, not database
+        expect(session('organization_current_id'))->toBe($org2->id);
+    });
+
+    it('can set organization as default', function () {
+        $org = OrganizationFactory::new()->ownedBy($this->user)->create();
+
+        Livewire::test(OrganizationSwitcher::class)
+            ->call('switchOrganization', $org->id)
+            ->call('setAsDefault')
+            ->assertSet('isCurrentDefault', true)
+            ->assertSet('successMessage', __('Default organization updated.'));
+
+        // setAsDefault should update the database
         $this->user->refresh();
-        expect($this->user->organization_id)->toBe($org2->id);
+        expect($this->user->organization_id)->toBe($org->id);
     });
 
     it('dispatches organization-switched event', function () {

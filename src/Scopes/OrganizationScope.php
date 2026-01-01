@@ -22,10 +22,24 @@ class OrganizationScope implements Scope
     }
 
     /**
+     * Session key for storing current organization ID.
+     */
+    protected const ORGANIZATION_SESSION_KEY = 'organization_current_id';
+
+    /**
      * Get the current organization ID safely without triggering recursive queries.
+     *
+     * Uses hybrid session/database approach:
+     * 1. Check session first (for active switching without DB writes)
+     * 2. Fall back to database (user's default organization)
      */
     protected function getCurrentOrganizationId(): ?int
     {
+        // Check session first (for active switching without DB writes)
+        if (session()->has(self::ORGANIZATION_SESSION_KEY)) {
+            return session(self::ORGANIZATION_SESSION_KEY);
+        }
+
         if (! Auth::check()) {
             return null;
         }

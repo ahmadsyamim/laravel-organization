@@ -337,7 +337,18 @@ The Laravel Organization package provides several pre-built Livewire components 
 <livewire:org::switcher :user="auth()->user()" />
 ```
 
-Features include: current org display, org list, role badges, quick actions, and events.
+Features include:
+
+- Current organization display with "(Default)" badge
+- Organization list with role badges
+- **Switch** action (session-based, no DB write)
+- **Set as Default** button (persists to database)
+- Events: `organization-switched`, `default-organization-changed`
+
+The switcher uses a **hybrid session/database approach**:
+
+- Switching only updates the session (fast, no DB writes)
+- "Set as Default" persists to database for next login
 
 #### 2. Create Organization Form (`CreateOrganizationForm`)
 
@@ -361,7 +372,13 @@ Edit/delete with confirmation, permission checks, and events.
 <livewire:org::list />
 ```
 
-Paginated, sortable, filterable table with quick actions and events.
+Paginated, sortable, filterable table with:
+
+- "Current" and "Default" badges per organization
+- **Switch To** action (session-based)
+- **Set Default** action (database persist)
+- Edit and Delete actions (with permissions)
+- Events: `organization-switched`, `default-organization-changed`
 
 #### 5. Organization Widget (`OrganizationWidget`)
 

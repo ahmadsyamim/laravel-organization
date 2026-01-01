@@ -257,6 +257,35 @@ class User extends Authenticatable implements UserOrganizationContract
 }
 ```
 
+### Organization Switching (Hybrid Approach)
+
+The package uses a **hybrid session/database approach** for organization context:
+
+- **Session**: Used for active switching (no database writes)
+- **Database**: Stores the user's "default" organization
+
+```php
+// Switch organization (session only - no DB write)
+$user->setOrganizationId($organizationId);
+
+// Set as default (writes to database)
+$user->setDefaultOrganizationId($organizationId);
+
+// Get current organization (session first, then database)
+$currentOrgId = $user->getOrganizationId();
+
+// Get default organization (database only)
+$defaultOrgId = $user->getDefaultOrganizationId();
+
+// On login: sync default to session
+$user->syncOrganizationFromDefault();
+
+// On logout: clear session
+$user->clearOrganizationSession();
+```
+
+See [Organization Switching](./05-organization-switching.md) for detailed documentation.
+
 Membership checks and role helpers remain identical to original usage guide.
 
 ## Validation

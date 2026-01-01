@@ -123,9 +123,14 @@
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
                                                 {{ $organization->name }}
-                                                @if(auth()->user() && property_exists(auth()->user(), 'current_organization_id') && auth()->user()->current_organization_id === $organization->id)
+                                                @if(session('organization_current_id') == $organization->id || (!session()->has('organization_current_id') && auth()->user() && auth()->user()->organization_id === $organization->id))
                                                     <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                         Current
+                                                    </span>
+                                                @endif
+                                                @if(auth()->user() && auth()->user()->organization_id === $organization->id)
+                                                    <span class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        Default
                                                     </span>
                                                 @endif
                                             </div>
@@ -154,11 +159,25 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end space-x-2">
+                                        @php
+                                            $currentOrgId = session('organization_current_id') ?? (auth()->user() ? auth()->user()->organization_id : null);
+                                            $isCurrentOrg = $currentOrgId == $organization->id;
+                                            $isDefaultOrg = auth()->user() && auth()->user()->organization_id === $organization->id;
+                                        @endphp
+
                                         <!-- Switch To Organization -->
-                                        @if(auth()->user() && property_exists(auth()->user(), 'current_organization_id') && auth()->user()->current_organization_id !== $organization->id)
+                                        @if(!$isCurrentOrg)
                                             <button wire:click="switchToOrganization({{ $organization->id }})"
                                                     class="text-blue-600 hover:text-blue-900 text-sm font-medium">
                                                 Switch To
+                                            </button>
+                                        @endif
+
+                                        <!-- Set as Default -->
+                                        @if(!$isDefaultOrg)
+                                            <button wire:click="setAsDefault({{ $organization->id }})"
+                                                    class="text-green-600 hover:text-green-900 text-sm font-medium">
+                                                Set Default
                                             </button>
                                         @endif
 
@@ -223,8 +242,43 @@
         @endif
     </div>
 
+    <!-- Success/Error Messages from Component -->
+    @if($successMessage)
+        <div x-data="{ show: true }"
+             x-show="show"
+             x-transition
+             x-init="setTimeout(() => show = false, 5000)"
+             class="fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg max-w-md">
+            <div class="flex items-center justify-between">
+                <span class="text-sm">{{ $successMessage }}</span>
+                <button @click="show = false" class="ml-4 text-green-500 hover:text-green-700">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if($errorMessage)
+        <div x-data="{ show: true }"
+             x-show="show"
+             x-transition
+             x-init="setTimeout(() => show = false, 5000)"
+             class="fixed top-4 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg max-w-md">
+            <div class="flex items-center justify-between">
+                <span class="text-sm">{{ $errorMessage }}</span>
+                <button @click="show = false" class="ml-4 text-red-500 hover:text-red-700">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
     <!-- Loading State -->
-    <div wire:loading.flex wire:target="switchToOrganization,editOrganization,deleteOrganization"
+    <div wire:loading.flex wire:target="switchToOrganization,editOrganization,deleteOrganization,setAsDefault"
          class="fixed inset-0 bg-black bg-opacity-25 items-center justify-center z-50">
         <div class="bg-white rounded-lg p-4 shadow-xl">
             <div class="flex items-center gap-3">

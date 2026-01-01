@@ -12,6 +12,11 @@ use Livewire\Component;
 
 class OrganizationSwitcher extends Component
 {
+    /**
+     * Session key for storing current organization ID.
+     */
+    protected const ORGANIZATION_SESSION_KEY = 'organization_current_id';
+
     public ?Authenticatable $user = null;
 
     public ?Organization $currentOrganization = null;
@@ -21,6 +26,10 @@ class OrganizationSwitcher extends Component
     public bool $showDropdown = false;
 
     public ?string $errorMessage = null;
+
+    public ?string $successMessage = null;
+
+    public bool $isCurrentDefault = false;
 
     protected $listeners = [
         'organization-created' => 'refreshOrganizations',
@@ -33,15 +42,33 @@ class OrganizationSwitcher extends Component
         // Use passed user or fallback to Auth::user()
         $this->user = $user ?? Auth::user();
 
-        // Load current organization if user has one set
+        // Load current organization - check session first, then DB
         if ($this->user) {
-            $organizationId = $this->user instanceof Model ? $this->user->getAttribute('organization_id') : null;
+            $organizationId = session(self::ORGANIZATION_SESSION_KEY)
+                ?? ($this->user instanceof Model ? $this->user->getAttribute('organization_id') : null);
+
             if ($organizationId) {
                 $this->currentOrganization = Organization::find($organizationId);
+                $this->updateDefaultStatus();
             }
         }
 
         $this->loadOrganizations();
+    }
+
+    /**
+     * Check if current organization is the user's default.
+     */
+    protected function updateDefaultStatus(): void
+    {
+        if (! $this->currentOrganization || ! $this->user instanceof Model) {
+            $this->isCurrentDefault = false;
+
+            return;
+        }
+
+        $defaultOrgId = $this->user->getAttribute('organization_id');
+        $this->isCurrentDefault = $defaultOrgId === $this->currentOrganization->id;
     }
 
     public function loadOrganizations()
@@ -79,9 +106,13 @@ class OrganizationSwitcher extends Component
         $this->organizations = $ownedOrganizations->merge($memberOrganizations)->unique('id')->all();
     }
 
+    /**
+     * Switch to a different organization (session-based, no DB write).
+     */
     public function switchOrganization($organizationId)
     {
         $this->errorMessage = null;
+        $this->successMessage = null;
 
         try {
             $organization = Organization::find($organizationId);
@@ -101,18 +132,12 @@ class OrganizationSwitcher extends Component
                 }
             }
 
-            // Update user's organization - cast to Model for save/refresh methods
-            if ($this->user instanceof Model) {
-                $this->user->setAttribute('organization_id', $organization->id);
-                $this->user->save();
-                $this->user->refresh();
-
-                // Force refresh the authenticated user in session
-                Auth::setUser($this->user);
-            }
+            // Store in session only (no DB write)
+            session([self::ORGANIZATION_SESSION_KEY => $organization->id]);
 
             $this->currentOrganization = $organization;
             $this->showDropdown = false;
+            $this->updateDefaultStatus();
 
             // Emit event for other components to listen to
             $this->dispatch('organization-switched', organizationId: $organization->id);
@@ -122,13 +147,6 @@ class OrganizationSwitcher extends Component
                 'user_id' => $this->user->getAuthIdentifier(),
             ]);
             $this->errorMessage = __('Organization not found.');
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('Database error during organization switch', [
-                'organization_id' => $organizationId,
-                'user_id' => $this->user->getAuthIdentifier(),
-                'error' => $e->getMessage(),
-            ]);
-            $this->errorMessage = __('Database error occurred. Please try again.');
         } catch (\Throwable $e) {
             Log::error('Failed to switch organization', [
                 'organization_id' => $organizationId,
@@ -137,6 +155,44 @@ class OrganizationSwitcher extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
             $this->errorMessage = __('Failed to switch organization. Please try again.');
+        }
+    }
+
+    /**
+     * Set the current organization as the user's default (persisted to DB).
+     */
+    public function setAsDefault()
+    {
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        if (! $this->currentOrganization) {
+            $this->errorMessage = __('No organization selected.');
+
+            return;
+        }
+
+        try {
+            if ($this->user instanceof Model) {
+                $this->user->setAttribute('organization_id', $this->currentOrganization->id);
+                $this->user->save();
+                $this->user->refresh();
+
+                // Update session to keep in sync
+                session([self::ORGANIZATION_SESSION_KEY => $this->currentOrganization->id]);
+
+                $this->isCurrentDefault = true;
+                $this->successMessage = __('Default organization updated.');
+
+                $this->dispatch('default-organization-changed', organizationId: $this->currentOrganization->id);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to set default organization', [
+                'organization_id' => $this->currentOrganization->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+            $this->errorMessage = __('Failed to set default organization. Please try again.');
         }
     }
 
@@ -174,9 +230,18 @@ class OrganizationSwitcher extends Component
         if ($this->currentOrganization && $this->currentOrganization->id == $organizationId) {
             $this->currentOrganization = null;
 
+            // Clear session
+            session()->forget(self::ORGANIZATION_SESSION_KEY);
+
+            // Only update DB if the deleted org was the default
             if ($this->user instanceof Model) {
-                $this->user->update(['organization_id' => null]);
+                $defaultOrgId = $this->user->getAttribute('organization_id');
+                if ($defaultOrgId == $organizationId) {
+                    $this->user->update(['organization_id' => null]);
+                }
             }
+
+            $this->isCurrentDefault = false;
         }
 
         // Refresh the organizations list

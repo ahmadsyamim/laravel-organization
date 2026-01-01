@@ -17,6 +17,11 @@ class OrganizationList extends Component
 {
     use WithPagination;
 
+    /**
+     * Session key for storing current organization ID.
+     */
+    protected const ORGANIZATION_SESSION_KEY = 'organization_current_id';
+
     public string $search = '';
 
     public string $sortBy = 'name';
@@ -26,6 +31,8 @@ class OrganizationList extends Component
     public string $filter = 'all'; // 'all', 'owned', 'member'
 
     public ?string $errorMessage = null;
+
+    public ?string $successMessage = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -84,9 +91,13 @@ class OrganizationList extends Component
         ]);
     }
 
+    /**
+     * Switch to a different organization (session-based, no DB write).
+     */
     public function switchToOrganization($organizationId)
     {
         $this->errorMessage = null;
+        $this->successMessage = null;
 
         try {
             $organization = Organization::find($organizationId);
@@ -106,8 +117,8 @@ class OrganizationList extends Component
                 return;
             }
 
-            $user->setAttribute('organization_id', $organization->id);
-            $user->save();
+            // Store in session only (no DB write)
+            session([self::ORGANIZATION_SESSION_KEY => $organization->id]);
 
             // Emit event for other components to listen to
             $this->dispatch('organization-switched', organizationId: $organization->id);
@@ -117,13 +128,6 @@ class OrganizationList extends Component
                 'user_id' => Auth::id(),
             ]);
             $this->errorMessage = __('Organization not found.');
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('Database error during organization switch', [
-                'organization_id' => $organizationId,
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-            ]);
-            $this->errorMessage = __('Database error occurred. Please try again.');
         } catch (\Throwable $e) {
             Log::error('Failed to switch organization', [
                 'organization_id' => $organizationId,
@@ -133,6 +137,61 @@ class OrganizationList extends Component
             ]);
             $this->errorMessage = __('Failed to switch organization. Please try again.');
         }
+    }
+
+    /**
+     * Set an organization as the user's default (persisted to DB).
+     */
+    public function setAsDefault($organizationId)
+    {
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        try {
+            $organization = Organization::find($organizationId);
+
+            if (! $organization) {
+                $this->errorMessage = __('Organization not found.');
+
+                return;
+            }
+
+            $user = Auth::user();
+
+            // Check if user has access to this organization
+            if (! $organization->isOwnedBy($user) && ! $organization->hasActiveMember($user)) {
+                $this->errorMessage = __('You do not have access to this organization.');
+
+                return;
+            }
+
+            $user->setAttribute('organization_id', $organization->id);
+            $user->save();
+
+            // Update session to keep in sync
+            session([self::ORGANIZATION_SESSION_KEY => $organization->id]);
+
+            $this->successMessage = __('Default organization updated.');
+
+            $this->dispatch('default-organization-changed', organizationId: $organization->id);
+        } catch (\Throwable $e) {
+            Log::error('Failed to set default organization', [
+                'organization_id' => $organizationId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+            $this->errorMessage = __('Failed to set default organization. Please try again.');
+        }
+    }
+
+    /**
+     * Check if an organization is the user's default.
+     */
+    public function isDefaultOrganization($organizationId): bool
+    {
+        $user = Auth::user();
+
+        return $user && $user->organization_id === $organizationId;
     }
 
     public function getOrganizationsProperty()

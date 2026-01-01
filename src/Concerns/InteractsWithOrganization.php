@@ -62,11 +62,21 @@ trait InteractsWithOrganization
     /**
      * Get the current organization ID from auth user.
      *
+     * Uses hybrid session/database approach:
+     * 1. Check session first (for active switching without DB writes)
+     * 2. Fall back to database (user's default organization)
+     *
      * Safely retrieves the organization_id without triggering relationships
      * or causing recursive query execution.
      */
     public static function getCurrentOrganizationId(): ?int
     {
+        // Check session first (for active switching without DB writes)
+        $sessionKey = 'organization_current_id';
+        if (session()->has($sessionKey)) {
+            return session($sessionKey);
+        }
+
         if (! Auth::check()) {
             return null;
         }
