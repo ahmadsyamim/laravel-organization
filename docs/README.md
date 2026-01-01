@@ -14,6 +14,7 @@ Welcome to the Laravel Organization package documentation. Use the sections belo
   - 03-usage/02-authorization-and-policies.md — Authorization & policies
   - 03-usage/03-components-and-actions.md — Components & actions
   - 03-usage/04-invitations.md — Organization invitations
+  - 03-usage/05-organization-switching.md — Organization switching (hybrid session/database)
 - 04 – Troubleshooting
   - 04-troubleshooting/01-memory-exhaustion-fix.md — Infinite loop fix notes
 

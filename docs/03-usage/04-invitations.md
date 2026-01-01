@@ -20,6 +20,43 @@ The Organization Invitations system allows organizations to invite users to join
 
 Provides email invitations, token security, expiration, role assignment, events, Livewire UI, and resend capability.
 
+## Authorization
+
+### SendInvitation
+
+The inviter must be either the organization owner or an active member of the organization. This security check prevents unauthorized users from sending invitations:
+
+```php
+// Will throw InvalidArgumentException if user lacks permission
+$invitation = (new SendInvitation())->handle(
+    organization: $organization,
+    invitedBy: auth()->user(), // Must be owner or active member
+    email: 'john@example.com',
+    role: OrganizationRole::MEMBER
+);
+```
+
+### ResendInvitation
+
+Requires an authenticated user with permission to manage the organization:
+
+```php
+// User parameter is required for authorization check
+$result = (new ResendInvitation)->handle(
+    invitation: $invitation,
+    user: auth()->user() // Required - must be owner or active member
+);
+```
+
+### AcceptInvitation
+
+Uses database transactions to ensure atomic operations when accepting invitations and adding users to organizations:
+
+```php
+// Wrapped in DB::transaction for data consistency
+$organization = (new AcceptInvitation)->handle($invitation, $user);
+```
+
 ## Model
 
 `Invitation` model stores invitation state and lifecycle timestamps. Key helpers:
@@ -39,7 +76,7 @@ Factory states: `pending`, `accepted`, `declined`, `expired`, `admin`, `member`.
 
 ## Actions
 
-### SendInvitation
+### Sending Invitations
 
 ```php
 $invitation = (new SendInvitation())->handle(
@@ -53,15 +90,15 @@ $invitation = (new SendInvitation())->handle(
 
 Validates email, uniqueness, pending state. Dispatches `InvitationSent`.
 
-### AcceptInvitation
+### Accepting Invitations
 
 Adds user to org and marks accepted. Dispatches `InvitationAccepted` + `MemberAdded`.
 
-### DeclineInvitation
+### Declining Invitations
 
 Marks declined. Dispatches `InvitationDeclined`.
 
-### ResendInvitation
+### Resending Invitations
 
 Regenerates token & expiration. Dispatches `InvitationSent`.
 
@@ -76,7 +113,6 @@ Listeners can send emails, log activity, trigger webhooks.
 ## Livewire Component
 
 ![Invitation Management](../../screenshots/invitation.png)
-cla
 
 ## Usage Examples
 
@@ -89,10 +125,32 @@ Use action classes with `Event::fake()` to assert lifecycle events. Example fact
 ## API Reference
 
 ```php
-SendInvitation::handle(Organization $o, User $by, string $email, OrganizationRole $role, int $days=7): Invitation
-AcceptInvitation::handle(Invitation $i, User $u): Organization
-DeclineInvitation::handle(Invitation $i): Invitation
-ResendInvitation::handle(Invitation $i, int $days=7): Invitation
+// SendInvitation - invitedBy must be owner or active member
+SendInvitation::handle(
+    Organization $organization,
+    User $invitedBy,
+    string $email,
+    OrganizationRole $role = OrganizationRole::MEMBER,
+    int $expirationDays = 7
+): Invitation
+
+// AcceptInvitation - wrapped in database transaction
+AcceptInvitation::handle(
+    Invitation $invitation,
+    User $user
+): Organization
+
+// DeclineInvitation
+DeclineInvitation::handle(
+    Invitation $invitation
+): Invitation
+
+// ResendInvitation - user parameter required for authorization
+ResendInvitation::handle(
+    Invitation $invitation,
+    User $user,
+    int $expirationDays = 7
+): Invitation
 ```
 
 ## Customization
@@ -102,12 +160,13 @@ Extend actions to add custom validation (e.g. domain restriction). Publish and e
 ## Best Practices
 
 1. Validate emails strictly
-2. Restrict who can send invitations via policies
+2. Authorization is enforced automatically - only owners/members can send invitations
 3. Use reasonable expiration (7–14 days)
 4. Log all invitation lifecycle events
 5. Send onboarding after acceptance
 6. Periodically clean expired invites
-7. Wrap accept in transactions for consistency
+7. AcceptInvitation is automatically wrapped in transactions for consistency
+8. Always pass the authenticated user to ResendInvitation for authorization
 
 ## Troubleshooting
 
@@ -123,4 +182,4 @@ Links: [Authorization & Policies](./02-authorization-and-policies.md) | [Events]
 
 Indexes on email/token, pagination for large lists, soft deletes for audit.
 
-Last updated: 2025-11-11
+Last updated: 2026-01-01

@@ -153,6 +153,7 @@
 - **PSR Compliance**: Follows PHP standards and best practices
 - **Laravel Integration**: Deep integration with Laravel ecosystem
 - **Extensibility**: Designed for easy customization and extension
+- **LaravelOrganization Utility**: Centralized helper class for session management and organization context
 
 ## Multi-Tenancy Features
 

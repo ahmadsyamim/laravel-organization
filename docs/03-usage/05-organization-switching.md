@@ -17,6 +17,28 @@ This approach provides:
 - **Persistence**: Default organization survives session expiration
 - **Flexibility**: Users can switch freely without impacting their default
 
+## LaravelOrganization Utility Class
+
+The package provides a centralized utility class for session management:
+
+```php
+use CleaniqueCoders\LaravelOrganization\LaravelOrganization;
+
+// Session key constant
+LaravelOrganization::SESSION_KEY; // 'organization_current_id'
+
+// Get current organization ID (session first, then database)
+$orgId = LaravelOrganization::getCurrentOrganizationId();
+
+// Set current organization ID in session
+LaravelOrganization::setCurrentOrganizationId($organizationId);
+
+// Clear organization session
+LaravelOrganization::clearSession();
+```
+
+This class is used internally by all components for consistent session handling. You can use it directly when you need low-level control over the organization context.
+
 ## How It Works
 
 ### Session-Based Switching
