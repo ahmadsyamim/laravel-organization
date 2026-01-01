@@ -2,6 +2,115 @@
 
 All notable changes to `laravel-organization` will be documented in this file.
 
+## 1.2.1 - 2026-01-01
+
+### Overview
+
+This release includes critical security fixes, performance improvements, and code quality enhancements for the Laravel Organization package.
+
+
+---
+
+### Security Fixes
+
+**Authorization Checks for Invitations**
+
+- SendInvitation: Added permission validation to ensure only organization owners or active members can send invitations
+- ResendInvitation: Added permission validation to prevent unauthorized users from resending invitations
+
+**Database Transaction for AcceptInvitation**
+
+- Wrapped invitation acceptance and user addition in a database transaction to ensure atomic operations and prevent data inconsistencies
+
+
+---
+
+### Bug Fixes
+
+**Email Membership Check**
+
+- Fixed critical bug in SendInvitation where the email membership check was querying the pivot table (which doesn't have an email column) instead of joining with the users table
+
+
+---
+
+### Performance Improvements
+
+**N+1 Query Fixes**
+
+- OrganizationList: Added eager loading for user memberships to prevent N+1 queries when displaying user roles
+- InvitationManager: Added eager loading for invitedByUser and organization relationships
+
+
+---
+
+### Code Quality Improvements
+
+**Centralized Session Management**
+
+- Introduced LaravelOrganization utility class with centralized SESSION_KEY constant and helper methods:
+  - getCurrentOrganizationId()
+  - setCurrentOrganizationId()
+  - clearSession()
+  
+
+**Consistent Exception Types**
+
+- Standardized exception types across action classes to use InvalidArgumentException consistently
+
+**Type Safety**
+
+- Added return type hints to model methods (getId(), getOwnerId(), getAcceptedAt(), etc.)
+- Added parameter type hints to Livewire component methods
+- Updated contracts with proper type declarations
+
+**Enum Usage**
+
+- Replaced hardcoded role strings with OrganizationRole enum values
+
+
+---
+
+### Breaking Changes
+
+**Authorization Requirements**
+
+- SendInvitation::handle() now requires the inviter to be an organization owner or active member
+- ResendInvitation::handle() now requires an authenticated user with permission to manage the organization's invitations
+
+
+---
+
+### Files Changed
+
+- `src/LaravelOrganization.php` - New utility class
+- `src/Actions/SendInvitation.php` - Authorization check + email membership fix
+- `src/Actions/AcceptInvitation.php` - Database transaction
+- `src/Actions/ResendInvitation.php` - Authorization check
+- `src/Actions/DeleteOrganization.php` - Exception type consistency
+- `src/Actions/UpdateOrganization.php` - Exception type consistency
+- `src/Actions/CreateNewOrganization.php` - Centralized session key
+- `src/Livewire/OrganizationList.php` - N+1 fix + type hints
+- `src/Livewire/OrganizationSwitcher.php` - Centralized session key + type hints
+- `src/Livewire/InvitationManager.php` - Eager loading
+- `src/Concerns/InteractsWithOrganization.php` - Centralized session key
+- `src/Concerns/InteractsWithUserOrganization.php` - Enum usage
+- `src/Concerns/InteractsWithOrganizationSettings.php` - Type hints
+- `src/Scopes/OrganizationScope.php` - Centralized session key
+- `src/Models/Organization.php` - Return type hints
+- `src/Models/Invitation.php` - Return type hints
+- `src/Contracts/OrganizationScopingContract.php` - Type declarations
+- `src/Contracts/UserOrganizationContract.php` - Type declarations
+
+
+---
+
+### Upgrade Guide
+
+1. Update any custom code that calls `SendInvitation::handle()` to ensure the inviter is the organization owner or an active member
+2. Update any custom code that calls `ResendInvitation::handle()` to pass an authenticated user as the second parameter
+3. If you were referencing the session key directly, migrate to using `LaravelOrganization::SESSION_KEY`
+
 ## Authorization, Events, Hardening & CI Expansion  - 2025-11-11
 
 ### Summary
@@ -11,27 +120,34 @@ This release focuses on platform hardening: a comprehensive `OrganizationPolicy`
 ### Added
 
 - Authorization layer: `OrganizationPolicy` (11 discrete abilities: viewAny, view, create, update, delete, restore, forceDelete, manageMembers, changeMemberRole, transferOwnership, manageSettings).
+  
 - Organization lifecycle events:
+  
   - `OrganizationCreated`, `OrganizationUpdated`, `OrganizationDeleted`
   - Membership events: `MemberAdded`, `MemberRemoved`, `MemberRoleChanged`
   - Ownership transfer: `OwnershipTransferred`
   
 - Invitation event listener wiring groundwork (listener registration for future invitation features without exposing unfinished API).
+  
 - Invitation Management
+  
 - Rate limiting for organization creation (configurable in `config/organization.php`).
+  
 - Expanded CI matrix:
+  
   - PHP 8.3 & 8.4
   - Laravel 11 & 12
   - Ubuntu, macOS, Windows runners
   
 - Test coverage generation & reporting (HTML + external service badge integration).
+  
 - Robust validation and structured exception handling in Livewire components (`CreateOrganization`, `UpdateOrganization`, `OrganizationSwitcher`, `OrganizationList`).
+  
 
 ### Screenshots
 
 <img width="1254" height="708" alt="invitation" src="https://github.com/user-attachments/assets/eeb65daa-1e85-4c37-bbd8-b855068ba459" />
 **Invitation Management**
-
 `<livewire:org::invitation-manager :organization="$organization" />` provides send, resend, accept/decline UI with notifications.
 
 Core methods:
@@ -42,33 +158,42 @@ resendInvitation($uuid);
 acceptInvitation($uuid);
 declineInvitation($uuid);
 
+
 ```
 ### Changed
 
 - Service provider (`LaravelOrganizationServiceProvider`) now:
+  
   - Registers `OrganizationPolicy` via Gate.
   - Registers event listeners (`InvitationSent` → `SendInvitationEmail`) for future extensibility.
   - Registers additional Livewire components including `invitation-manager` scaffold.
   
 - Improved internal consistency of role handling via `OrganizationRole` enum throughout actions and tests.
+  
 - Documentation expanded for policies, events, and configuration options (authorization & lifecycle usage examples).
+  
 
 ### Fixed
 
 - Eliminated all PHPStan Level 5 errors (49 → 0) through:
+  
   - PHPDoc enrichment
   - Correct builder & relationship typing
   - Removal of unused variables and dead code
   
 - Defensive guards added in Livewire components to prevent unhandled exceptions when edge conditions occur.
+  
 - Stable organization scoping (recursion fix retained; no regressions observed).
+  
 
 ### Quality / DX
 
 - > 250 tests total (policy + event suites substantially increased coverage).
   
 - Architecture tests ensure no debug functions (`dump`, `dd`, `ray`) leak into release code.
+  
 - Consistent contract bindings for `OrganizationContract`, `OrganizationMembershipContract`, `OrganizationOwnershipContract`, `OrganizationSettingsContract`.
+  
 
 ### Performance & Safety
 
@@ -87,6 +212,7 @@ declineInvitation($uuid);
 - Optional: publish updated config if you want rate limiting.
   ```bash
   php artisan vendor:publish --tag="laravel-organization-config"
+  
   
   ```
 - If you already extended your own policy, ensure merging the newly added abilities.
@@ -109,6 +235,7 @@ composer require cleaniquecoders/laravel-organization
 php artisan vendor:publish --tag="laravel-organization-migrations"
 php artisan migrate
 
+
 ```
 ### Snippets
 
@@ -119,6 +246,7 @@ if (Gate::allows('update', $organization)) {
     // proceed
 }
 
+
 ```
 Listening to an event:
 
@@ -126,6 +254,7 @@ Listening to an event:
 Event::listen(\CleaniqueCoders\LaravelOrganization\Events\OrganizationCreated::class, function ($event) {
     // custom audit log
 });
+
 
 ```
 Rate limit config fragment (`config/organization.php`):
@@ -137,6 +266,7 @@ Rate limit config fragment (`config/organization.php`):
         'decay_minutes' => 60,
     ],
 ],
+
 
 ```
 ## Fixed Recursion - 2025-10-10
@@ -150,6 +280,7 @@ When users registered and received email verification, the application would han
 ```
 PHP Fatal error: Allowed memory size of 2147483648 bytes exhausted (tried to allocate 12288 bytes)
 in vendor/laravel/framework/src/Illuminate/Database/Eloquent/SoftDeletingScope.php on line 121
+
 
 
 ```
@@ -203,6 +334,7 @@ public function apply(Builder $builder, Model $model)
 }
 
 
+
 ```
 ###### After (Fixed):
 
@@ -231,6 +363,7 @@ protected function getCurrentOrganizationId(): ?int
 
     return null;
 }
+
 
 
 ```
@@ -315,7 +448,6 @@ Complete documentation added for:
 - Actions and components usage
 - Configuration options
 - Contracts and interfaces
-
 **Full Changelog**: https://github.com/cleaniquecoders/laravel-organization/compare/1.0.3...1.1.0
 
 ## Update gitignore to include docs/ directory - 2025-10-10
@@ -356,6 +488,7 @@ php artisan migrate
 
 
 
+
 ```
 ### 🚀 Quick Usage
 
@@ -368,6 +501,7 @@ $org->addUser($member, OrganizationRole::MEMBER);
 class Post extends Model {
     use InteractsWithOrganization;
 }
+
 
 
 
