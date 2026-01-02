@@ -68,7 +68,7 @@
     <!-- Organizations Table -->
     <div class="border-t border-gray-200">
         @if($organizations->count() > 0)
-            <div class="overflow-hidden">
+            <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -158,44 +158,125 @@
                                     {{ $organization->allMembers()->count() }} member{{ $organization->allMembers()->count() !== 1 ? 's' : '' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end space-x-2">
-                                        @php
-                                            $currentOrgId = session('organization_current_id') ?? (auth()->user() ? auth()->user()->organization_id : null);
-                                            $isCurrentOrg = $currentOrgId == $organization->id;
-                                            $isDefaultOrg = auth()->user() && auth()->user()->organization_id === $organization->id;
-                                        @endphp
+                                    @php
+                                        $currentOrgId = session('organization_current_id') ?? (auth()->user() ? auth()->user()->organization_id : null);
+                                        $isCurrentOrg = $currentOrgId == $organization->id;
+                                        $isDefaultOrg = auth()->user() && auth()->user()->organization_id === $organization->id;
+                                        $isOwner = $organization->isOwnedBy(auth()->user());
+                                        $isAdmin = $this->getUserRoleInOrganization($organization) === 'Administrator' || $this->getUserRoleInOrganization($organization) === 'Owner';
+                                    @endphp
 
-                                        <!-- Switch To Organization -->
-                                        @if(!$isCurrentOrg)
-                                            <button wire:click="switchToOrganization({{ $organization->id }})"
-                                                    class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                                                Switch To
-                                            </button>
-                                        @endif
+                                    <!-- 3-dot Dropdown Menu -->
+                                    <div x-data="{
+                                        open: false,
+                                        toggle() {
+                                            this.open = !this.open;
+                                            if (this.open) {
+                                                this.$nextTick(() => this.positionDropdown());
+                                            }
+                                        },
+                                        positionDropdown() {
+                                            const button = this.$refs.button;
+                                            const dropdown = this.$refs.dropdown;
+                                            const rect = button.getBoundingClientRect();
+                                            const spaceBelow = window.innerHeight - rect.bottom;
+                                            const spaceAbove = rect.top;
+                                            const dropdownHeight = dropdown.offsetHeight;
 
-                                        <!-- Set as Default -->
-                                        @if(!$isDefaultOrg)
-                                            <button wire:click="setAsDefault({{ $organization->id }})"
-                                                    class="text-green-600 hover:text-green-900 text-sm font-medium">
-                                                Set Default
-                                            </button>
-                                        @endif
+                                            if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+                                                dropdown.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+                                                dropdown.style.top = 'auto';
+                                            } else {
+                                                dropdown.style.top = (rect.bottom + 8) + 'px';
+                                                dropdown.style.bottom = 'auto';
+                                            }
+                                            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+                                        }
+                                    }" class="relative inline-block text-left">
+                                        <button x-ref="button"
+                                                @click="toggle()"
+                                                @click.outside="open = false"
+                                                type="button"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                            </svg>
+                                        </button>
 
-                                        <!-- Edit Organization -->
-                                        @if($organization->isOwnedBy(auth()->user()) || $this->getUserRoleInOrganization($organization) === 'Administrator')
-                                            <button wire:click="editOrganization({{ $organization->id }})"
-                                                    class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                                                Edit
-                                            </button>
-                                        @endif
+                                        <div x-ref="dropdown"
+                                             x-show="open"
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             class="fixed z-[9999] w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                             style="display: none;">
+                                            <div class="py-1">
+                                                <!-- Switch To Organization -->
+                                                @if(!$isCurrentOrg)
+                                                    <button wire:click="switchToOrganization({{ $organization->id }})"
+                                                            @click="open = false"
+                                                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                                        <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                                        </svg>
+                                                        Switch To
+                                                    </button>
+                                                @endif
 
-                                        <!-- Delete Organization -->
-                                        @if($organization->isOwnedBy(auth()->user()))
-                                            <button wire:click="deleteOrganization({{ $organization->id }})"
-                                                    class="text-red-600 hover:text-red-900 text-sm font-medium">
-                                                Delete
-                                            </button>
-                                        @endif
+                                                <!-- Set as Default -->
+                                                @if(!$isDefaultOrg)
+                                                    <button wire:click="setAsDefault({{ $organization->id }})"
+                                                            @click="open = false"
+                                                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                                        </svg>
+                                                        Set as Default
+                                                    </button>
+                                                @endif
+
+                                                <!-- Edit Organization -->
+                                                @if($isOwner || $isAdmin)
+                                                    <button wire:click="editOrganization({{ $organization->id }})"
+                                                            @click="open = false"
+                                                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                                        <svg class="w-4 h-4 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                        Edit
+                                                    </button>
+                                                @endif
+
+                                                @if($isOwner)
+                                                    <div class="border-t border-gray-100 my-1"></div>
+
+                                                    <!-- Transfer Ownership -->
+                                                    <a href="{{ route('organization.transfer.show', $organization) }}"
+                                                       @click="open = false"
+                                                       class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                                        <svg class="w-4 h-4 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                        </svg>
+                                                        Transfer Ownership
+                                                    </a>
+
+                                                    <div class="border-t border-gray-100 my-1"></div>
+
+                                                    <!-- Delete Organization -->
+                                                    <button wire:click="deleteOrganization({{ $organization->id }})"
+                                                            @click="open = false"
+                                                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                                                        <svg class="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Delete
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

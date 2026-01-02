@@ -2,6 +2,7 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Tests;
 
+use CleaniqueCoders\LaravelOrganization\Enums\OrganizationRole;
 use CleaniqueCoders\LaravelOrganization\LaravelOrganizationServiceProvider;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use CleaniqueCoders\LaravelOrganization\Tests\Fixtures\User;
@@ -88,13 +89,34 @@ class TestCase extends Orchestra
             $table->id();
             $table->foreignIdFor(Organization::class)->constrained($organizationsTable)->cascadeOnDelete();
             $table->foreignIdFor(User::class)->constrained('users')->cascadeOnDelete();
-            $table->enum('role', ['member', 'administrator'])->default('member');
+            $table->enum('role', array_column(OrganizationRole::cases(), 'value'))->default(OrganizationRole::MEMBER->value);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['organization_id', 'user_id']);
             $table->index(['organization_id', 'role']);
             $table->index(['user_id', 'role']);
+        });
+
+        // Create ownership transfer requests table
+        $transferRequestsTable = config('organization.tables.ownership_transfer_requests', 'organization_ownership_transfer_requests');
+        Schema::create($transferRequestsTable, function (Blueprint $table) use ($organizationsTable) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignIdFor(Organization::class)->constrained($organizationsTable)->cascadeOnDelete();
+            $table->foreignId('current_owner_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('new_owner_id')->constrained('users')->cascadeOnDelete();
+            $table->string('token')->unique();
+            $table->text('message')->nullable();
+            $table->timestamp('accepted_at')->nullable();
+            $table->timestamp('declined_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
+            $table->timestamp('expires_at');
+            $table->softDeletes();
+            $table->timestamps();
+
+            $table->index(['organization_id', 'new_owner_id']);
+            $table->index('token');
         });
 
         // Create invitations table

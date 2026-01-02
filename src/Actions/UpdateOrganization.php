@@ -92,7 +92,7 @@ class UpdateOrganization
     }
 
     /**
-     * Check if user is an administrator of the organization.
+     * Check if user is an administrator or owner of the organization.
      *
      * @param  Organization  $organization  The organization to check
      * @param  User  $user  The user to check
@@ -101,7 +101,7 @@ class UpdateOrganization
     {
         $userRole = $organization->getUserRole($user);
 
-        return $userRole && $userRole->value === 'administrator';
+        return $userRole && $userRole->isAdmin();
     }
 
     /**

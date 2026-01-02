@@ -1,3 +1,4 @@
+<div>
 <div x-data="{ open: @entangle('showDropdown') }" class="relative inline-block text-left">
     <!-- Organization Switcher Button -->
     <div>
@@ -178,3 +179,4 @@
         </div>
     </div>
 @endif
+</div>

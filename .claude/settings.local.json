@@ -13,7 +13,11 @@
       "Bash(php -i:*)",
       "Bash(composer show:*)",
       "Bash(markdownlint:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(composer analyse:phpstan:*)",
+      "Bash(composer format:*)",
+      "Bash(php artisan:*)",
+      "Bash(./vendor/bin/testbench:*)"
     ],
     "deny": [],
     "ask": []

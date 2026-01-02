@@ -72,7 +72,7 @@
 
     <!-- Pending Invitations List -->
     @if($pendingInvitations->count() > 0)
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ __('Pending Invitations') }}
@@ -150,7 +150,7 @@
 
     <!-- User's Pending Invitations -->
     @if($userPendingInvitations->count() > 0)
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ __('Invitations for You') }}

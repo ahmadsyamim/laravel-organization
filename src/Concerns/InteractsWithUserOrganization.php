@@ -133,6 +133,14 @@ trait InteractsWithUserOrganization
     }
 
     /**
+     * Get organizations where user is an owner (via pivot table).
+     */
+    public function ownedOrganizationsViaRole(): BelongsToMany
+    {
+        return $this->activeOrganizations()->wherePivot('role', OrganizationRole::OWNER->value);
+    }
+
+    /**
      * Get organizations where user is an administrator.
      */
     public function administratedOrganizations(): BelongsToMany
@@ -161,11 +169,21 @@ trait InteractsWithUserOrganization
     }
 
     /**
+     * Check if user is an owner of an organization (via pivot role).
+     */
+    public function isOwnerOf(int $organizationId): bool
+    {
+        return $this->hasRoleInOrganization($organizationId, OrganizationRole::OWNER->value) ||
+               $this->ownsOrganization($organizationId);
+    }
+
+    /**
      * Check if user is an administrator of an organization.
      */
     public function isAdministratorOf(int $organizationId): bool
     {
         return $this->hasRoleInOrganization($organizationId, OrganizationRole::ADMINISTRATOR->value) ||
+               $this->hasRoleInOrganization($organizationId, OrganizationRole::OWNER->value) ||
                $this->ownsOrganization($organizationId);
     }
 

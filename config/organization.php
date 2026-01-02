@@ -9,6 +9,7 @@
 
 use CleaniqueCoders\LaravelOrganization\Models\Invitation;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
+use CleaniqueCoders\LaravelOrganization\Models\OwnershipTransferRequest;
 use Illuminate\Foundation\Auth\User;
 
 return [
@@ -84,6 +85,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Ownership Transfer Request Model
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the OwnershipTransferRequest model class that will be
+    | used for handling ownership transfer requests between users.
+    |
+    | The OwnershipTransferRequest model will be used for:
+    | - Managing ownership transfer requests
+    | - Tracking request status (pending, accepted, declined, cancelled)
+    | - Request expiration and validation
+    |
+    | Default: CleaniqueCoders\LaravelOrganization\Models\OwnershipTransferRequest::class
+    |
+    */
+
+    'ownership-transfer-request-model' => OwnershipTransferRequest::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Database Tables
     |--------------------------------------------------------------------------
     |
@@ -102,6 +122,7 @@ return [
         'organizations' => 'organizations',
         'organization_users' => 'organization_users',
         'invitations' => 'organization_invitations',
+        'ownership_transfer_requests' => 'organization_ownership_transfer_requests',
     ],
 
     /*

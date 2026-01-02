@@ -7,7 +7,9 @@
  * that manages organization-based tenancy in your Laravel application.
  */
 
+use CleaniqueCoders\LaravelOrganization\Models\Invitation;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
+use CleaniqueCoders\LaravelOrganization\Models\OwnershipTransferRequest;
 use Workbench\App\Models\User;
 
 return [
@@ -60,6 +62,46 @@ return [
     */
 
     'organization-model' => Organization::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Invitation Model
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the Invitation model class that will be used throughout
+    | the organization system.
+    |
+    */
+
+    'invitation-model' => Invitation::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ownership Transfer Request Model
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the OwnershipTransferRequest model class that will be
+    | used for handling ownership transfer requests.
+    |
+    */
+
+    'ownership-transfer-request-model' => OwnershipTransferRequest::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Database Tables
+    |--------------------------------------------------------------------------
+    |
+    | Customize the database table names used by the organization system.
+    |
+    */
+
+    'tables' => [
+        'organizations' => 'organizations',
+        'organization_users' => 'organization_users',
+        'invitations' => 'organization_invitations',
+        'ownership_transfer_requests' => 'organization_ownership_transfer_requests',
+    ],
 
     /*
     |--------------------------------------------------------------------------

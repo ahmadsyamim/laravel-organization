@@ -142,6 +142,14 @@ class Organization extends Model implements OrganizationContract, OrganizationMe
     }
 
     /**
+     * Get owners of the organization (from pivot table).
+     */
+    public function owners(): BelongsToMany
+    {
+        return $this->activeUsers()->wherePivot('role', OrganizationRole::OWNER->value);
+    }
+
+    /**
      * Get administrators of the organization.
      */
     public function administrators(): BelongsToMany
@@ -347,6 +355,21 @@ class Organization extends Model implements OrganizationContract, OrganizationMe
 
         $this->setOwner($newOwner);
         $this->save();
+
+        // Update pivot table roles
+        // Previous owner becomes administrator
+        if ($this->hasMember($previousOwner)) {
+            $this->updateUserRole($previousOwner, OrganizationRole::ADMINISTRATOR);
+        } else {
+            $this->addUser($previousOwner, OrganizationRole::ADMINISTRATOR);
+        }
+
+        // New owner gets owner role
+        if ($this->hasMember($newOwner)) {
+            $this->updateUserRole($newOwner, OrganizationRole::OWNER);
+        } else {
+            $this->addUser($newOwner, OrganizationRole::OWNER);
+        }
 
         // Dispatch the OwnershipTransferred event
         OwnershipTransferred::dispatch($this, $previousOwner, $newOwner);

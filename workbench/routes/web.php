@@ -94,6 +94,39 @@ Route::get('/invitations/decline/{token}', function ($token) {
     return redirect('/')->with('success', 'Invitation declined.');
 })->name('invitations.decline');
 
+// Ownership Transfer Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/organization/transfer/{token}/accept', function ($token) {
+        $transferRequest = \CleaniqueCoders\LaravelOrganization\Models\OwnershipTransferRequest::where('token', $token)->firstOrFail();
+
+        try {
+            $organization = \CleaniqueCoders\LaravelOrganization\Actions\AcceptOwnershipTransfer::run(
+                $transferRequest,
+                Auth::user()
+            );
+
+            return redirect('/dashboard')->with('success', "You are now the owner of {$organization->name}!");
+        } catch (\InvalidArgumentException $e) {
+            return redirect('/dashboard')->with('error', $e->getMessage());
+        }
+    })->name('organization.transfer.accept');
+
+    Route::get('/organization/transfer/{token}/decline', function ($token) {
+        $transferRequest = \CleaniqueCoders\LaravelOrganization\Models\OwnershipTransferRequest::where('token', $token)->firstOrFail();
+
+        try {
+            \CleaniqueCoders\LaravelOrganization\Actions\DeclineOwnershipTransfer::run(
+                $transferRequest,
+                Auth::user()
+            );
+
+            return redirect('/dashboard')->with('info', 'Ownership transfer request declined.');
+        } catch (\InvalidArgumentException $e) {
+            return redirect('/dashboard')->with('error', $e->getMessage());
+        }
+    })->name('organization.transfer.decline');
+});
+
 // Protected Routes (require authentication)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
@@ -103,6 +136,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/invitations', function () {
         return view('invitations');
     })->name('invitations');
+
+    Route::get('/transfer-ownership', function () {
+        return view('transfer-ownership');
+    })->name('transfer-ownership');
 
     Route::get('/organizations', function () {
         /** @var \Workbench\App\Models\User $user */

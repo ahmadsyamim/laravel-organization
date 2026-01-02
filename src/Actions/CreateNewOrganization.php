@@ -2,6 +2,7 @@
 
 namespace CleaniqueCoders\LaravelOrganization\Actions;
 
+use CleaniqueCoders\LaravelOrganization\Enums\OrganizationRole;
 use CleaniqueCoders\LaravelOrganization\Events\OrganizationCreated;
 use CleaniqueCoders\LaravelOrganization\LaravelOrganization;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
@@ -55,6 +56,9 @@ class CreateNewOrganization
             'description' => $organizationDescription,
             'owner_id' => $user->id,
         ]);
+
+        // Add the user as owner in the pivot table
+        $organization->addUser($user, OrganizationRole::OWNER);
 
         // Set as user's default organization if this is a default organization
         if ($default) {

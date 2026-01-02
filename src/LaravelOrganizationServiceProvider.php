@@ -15,6 +15,7 @@ use CleaniqueCoders\LaravelOrganization\Livewire\CreateOrganization;
 use CleaniqueCoders\LaravelOrganization\Livewire\InvitationManager;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationList;
 use CleaniqueCoders\LaravelOrganization\Livewire\OrganizationSwitcher;
+use CleaniqueCoders\LaravelOrganization\Livewire\TransferOwnership;
 use CleaniqueCoders\LaravelOrganization\Livewire\UpdateOrganization;
 use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use CleaniqueCoders\LaravelOrganization\Policies\OrganizationPolicy;
@@ -37,8 +38,10 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
             ->name('org')
             ->hasConfigFile('organization')
             ->hasViews()
+            ->hasRoute('web')
             ->hasMigration('create_organization_table')
             ->hasMigration('create_invitations_table')
+            ->hasMigration('create_ownership_transfer_requests_table')
             ->hasCommands([
                 CreateOrganizationCommand::class,
                 DeleteOrganizationCommand::class,
@@ -82,6 +85,7 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
             Livewire::component('org::update', UpdateOrganization::class);
             Livewire::component('org::list', OrganizationList::class);
             Livewire::component('org::invitation-manager', InvitationManager::class);
+            Livewire::component('org::transfer-ownership', TransferOwnership::class);
         }
     }
 }
