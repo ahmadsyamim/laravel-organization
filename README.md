@@ -96,12 +96,12 @@ $user->isAdministratorOf($id);     // Check admin role
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **[📖 Installation Guide](docs/installation.md)** - Detailed setup instructions
-- **[🚀 Usage Guide](docs/usage.md)** - Complete usage examples and patterns
-- **[⚙️ Configuration](docs/configuration.md)** - All configuration options and customization
-- **[🎯 Features Overview](docs/features.md)** - Complete feature breakdown
-- **[🔧 Contracts Documentation](docs/contracts.md)** - SOLID principles and custom implementations
-- **[🧩 Components & Actions](docs/components-and-actions.md)** - Livewire components and action classes
+- **[📖 Installation Guide](docs/02-development/01-installation.md)** - Detailed setup instructions
+- **[🚀 Usage Guide](docs/02-development/02-configuration.md)** - Complete usage examples and patterns
+- **[⚙️ Configuration](docs/02-development/02-configuration.md)** - All configuration options and customization
+- **[🎯 Features Overview](docs/01-architecture/01-overview.md)** - Complete feature breakdown
+- **[🔧 Contracts Documentation](docs/01-architecture/02-contracts.md)** - SOLID principles and custom implementations
+- **[🧩 Components & Actions](docs/03-usage/03-components-and-actions.md)** - Livewire components and action classes
 
 ## Requirements
 
