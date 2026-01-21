@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CreateOrganization extends Component
@@ -42,10 +43,7 @@ class CreateOrganization extends Component
         'description' => 'organization description',
     ];
 
-    protected $listeners = [
-        'show-create-organization' => 'showModal',
-    ];
-
+    #[On('show-create-organization')]
     public function showModal()
     {
         $this->showModal = true;

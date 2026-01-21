@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class UpdateOrganization extends Component
@@ -60,10 +61,7 @@ class UpdateOrganization extends Component
         'confirmationName' => 'confirmation name',
     ];
 
-    protected $listeners = [
-        'show-manage-organization' => 'showManageModal',
-    ];
-
+    #[On('show-manage-organization')]
     public function showManageModal($data)
     {
         $organizationId = $data['organizationId'] ?? null;

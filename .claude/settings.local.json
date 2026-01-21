@@ -17,7 +17,9 @@
       "Bash(composer analyse:phpstan:*)",
       "Bash(composer format:*)",
       "Bash(php artisan:*)",
-      "Bash(./vendor/bin/testbench:*)"
+      "Bash(./vendor/bin/testbench:*)",
+      "Bash(find:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

@@ -70,6 +70,49 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
         });
     }
 
+    /**
+     * Register Livewire components with version-aware registration.
+     *
+     * Livewire 4 changed how namespaced components (using ::) are resolved.
+     * In v4, namespaced components only check classNamespaces, not classComponents.
+     * This method uses the appropriate registration method for each version.
+     */
+    protected function registerLivewireComponents(): void
+    {
+        if ($this->isLivewire4()) {
+            // Livewire 4: Use addNamespace with full class namespace
+            // Components will be named based on their class names in kebab-case
+            // e.g., OrganizationSwitcher -> org::organization-switcher
+            Livewire::addNamespace('org', classNamespace: 'CleaniqueCoders\\LaravelOrganization\\Livewire');
+
+            // Also register aliases for backward compatibility with short names
+            // These map the old short names to the new kebab-case names
+            Livewire::component('org.switcher', OrganizationSwitcher::class);
+            Livewire::component('org.create', CreateOrganization::class);
+            Livewire::component('org.update', UpdateOrganization::class);
+            Livewire::component('org.list', OrganizationList::class);
+            Livewire::component('org.invitation-manager', InvitationManager::class);
+            Livewire::component('org.transfer-ownership', TransferOwnership::class);
+        } else {
+            // Livewire 3: Register components individually with custom names
+            Livewire::component('org::switcher', OrganizationSwitcher::class);
+            Livewire::component('org::create', CreateOrganization::class);
+            Livewire::component('org::update', UpdateOrganization::class);
+            Livewire::component('org::list', OrganizationList::class);
+            Livewire::component('org::invitation-manager', InvitationManager::class);
+            Livewire::component('org::transfer-ownership', TransferOwnership::class);
+        }
+    }
+
+    /**
+     * Determine if Livewire 4 is being used.
+     */
+    protected function isLivewire4(): bool
+    {
+        return property_exists(\Livewire\LivewireManager::class, 'v4')
+            && \Livewire\LivewireManager::$v4 === true;
+    }
+
     public function packageBooted(): void
     {
         // Register the OrganizationPolicy
@@ -80,12 +123,7 @@ class LaravelOrganizationServiceProvider extends PackageServiceProvider
 
         // Register Livewire components
         if (class_exists(Livewire::class)) {
-            Livewire::component('org::switcher', OrganizationSwitcher::class);
-            Livewire::component('org::create', CreateOrganization::class);
-            Livewire::component('org::update', UpdateOrganization::class);
-            Livewire::component('org::list', OrganizationList::class);
-            Livewire::component('org::invitation-manager', InvitationManager::class);
-            Livewire::component('org::transfer-ownership', TransferOwnership::class);
+            $this->registerLivewireComponents();
         }
     }
 }

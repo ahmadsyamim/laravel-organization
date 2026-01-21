@@ -8,6 +8,7 @@ use CleaniqueCoders\LaravelOrganization\Models\Organization;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -37,11 +38,13 @@ class OrganizationList extends Component
         'filter' => ['except' => 'all'],
     ];
 
-    protected $listeners = [
-        'organization-created' => '$refresh',
-        'organization-updated' => '$refresh',
-        'organization-deleted' => '$refresh',
-    ];
+    #[On('organization-created')]
+    #[On('organization-updated')]
+    #[On('organization-deleted')]
+    public function refresh(): void
+    {
+        // This method triggers a re-render of the component
+    }
 
     public function updatedSearch()
     {

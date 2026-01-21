@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class OrganizationSwitcher extends Component
@@ -26,12 +27,6 @@ class OrganizationSwitcher extends Component
     public ?string $successMessage = null;
 
     public bool $isCurrentDefault = false;
-
-    protected $listeners = [
-        'organization-created' => 'refreshOrganizations',
-        'organization-updated' => 'refreshOrganizations',
-        'organization-deleted' => 'handleOrganizationDeleted',
-    ];
 
     public function mount(mixed $user = null): void
     {
@@ -204,6 +199,8 @@ class OrganizationSwitcher extends Component
     /**
      * Refresh the organizations list when an organization is created or updated.
      */
+    #[On('organization-created')]
+    #[On('organization-updated')]
     public function refreshOrganizations()
     {
         $this->loadOrganizations();
@@ -219,6 +216,7 @@ class OrganizationSwitcher extends Component
      *
      * @param  int  $organizationId  The ID of the deleted organization
      */
+    #[On('organization-deleted')]
     public function handleOrganizationDeleted(int $organizationId): void
     {
         // If the deleted organization was the current one, clear it
